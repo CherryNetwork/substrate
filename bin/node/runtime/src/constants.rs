@@ -74,4 +74,6 @@ pub mod time {
 	pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
 	pub const HOURS: BlockNumber = MINUTES * 60;
 	pub const DAYS: BlockNumber = HOURS * 24;
+
+	pub const ALLOWED_PROPOSAL_PERIOD: BlockNumber = 24 * DAYS;
 }

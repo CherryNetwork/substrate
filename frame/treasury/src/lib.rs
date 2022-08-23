@@ -130,6 +130,12 @@ pub struct Proposal<AccountId, Balance> {
 	beneficiary: AccountId,
 	/// The amount held on deposit (reserved) for making this proposal.
 	bond: Balance,
+	/// How many times should this be repeated.
+	segments: u32,
+	/// How many times left to be repeated.
+	remaining_occurs: u32,
+	/// In which cycle the proposal will be active (True = current cycle, False = next cycle).
+	cycle: bool,
 }
 
 #[frame_support::pallet]
@@ -172,6 +178,10 @@ pub mod pallet {
 		#[pallet::constant]
 		type ProposalBondMaximum: Get<Option<BalanceOf<Self, I>>>;
 
+		/// Period that proposals will enter, after that they go in WaitingProposals
+		#[pallet::constant]
+		type AllowedProposalPeriod: Get<Self::BlockNumber>;
+
 		/// Period between successive spends.
 		#[pallet::constant]
 		type SpendPeriod: Get<Self::BlockNumber>;
@@ -199,11 +209,27 @@ pub mod pallet {
 		#[pallet::constant]
 		type MaxApprovals: Get<u32>;
 
-		/// The origin required for approving spends from the treasury outside of the proposal
-		/// process. The `Success` value is the maximum amount that this origin is allowed to
-		/// spend at a time.
-		type SpendOrigin: EnsureOrigin<Self::Origin, Success = BalanceOf<Self, I>>;
+		// /// The origin required for approving spends from the treasury outside of the proposal
+		// /// process. The `Success` value is the maximum amount that this origin is allowed to
+		// /// spend at a time.
+		// type SpendOrigin: EnsureOrigin<Self::Origin, Success = BalanceOf<Self, I>>;
 	}
+
+	/// Number of waiting proposals that have been made.
+	#[pallet::storage]
+	#[pallet::getter(fn waiting_proposal_count)]
+	pub(crate) type WaitingProposalCount<T, I = ()> = StorageValue<_, ProposalIndex, ValueQuery>;
+
+	/// Proposals that are waitning to be made.
+	#[pallet::storage]
+	#[pallet::getter(fn waiting_proposals)]
+	pub type WaitingProposals<T: Config<I>, I: 'static = ()> = StorageMap<
+		_,
+		Twox64Concat,
+		ProposalIndex,
+		Proposal<T::AccountId, BalanceOf<T, I>>,
+		OptionQuery,
+	>;
 
 	/// Number of proposals that have been made.
 	#[pallet::storage]
@@ -268,6 +294,10 @@ pub mod pallet {
 	pub enum Event<T: Config<I>, I: 'static = ()> {
 		/// New proposal.
 		Proposed { proposal_index: ProposalIndex },
+		/// New waiting proposal. \[proposal_index\]
+		WaitingProposed { proposal_index: ProposalIndex },
+		/// Move Proposal from Waiting to Proposed
+		WaitingProposalTransfered { proposal_index: ProposalIndex },
 		/// We have ended a spend period and will now allocate funds.
 		Spending { budget_remaining: BalanceOf<T, I> },
 		/// Some funds have been allocated.
@@ -280,12 +310,12 @@ pub mod pallet {
 		Rollover { rollover_balance: BalanceOf<T, I> },
 		/// Some funds have been deposited.
 		Deposit { value: BalanceOf<T, I> },
-		/// A new spend proposal has been approved.
-		SpendApproved {
-			proposal_index: ProposalIndex,
-			amount: BalanceOf<T, I>,
-			beneficiary: T::AccountId,
-		},
+		// /// A new spend proposal has been approved.
+		// SpendApproved {
+		// 	proposal_index: ProposalIndex,
+		// 	amount: BalanceOf<T, I>,
+		// 	beneficiary: T::AccountId,
+		// },
 	}
 
 	/// Error for the treasury pallet.
@@ -339,19 +369,76 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			#[pallet::compact] value: BalanceOf<T, I>,
 			beneficiary: <T::Lookup as StaticLookup>::Source,
+			segments: u32,
+			cycle: bool,
 		) -> DispatchResult {
 			let proposer = ensure_signed(origin)?;
 			let beneficiary = T::Lookup::lookup(beneficiary)?;
 
-			let bond = Self::calculate_bond(value);
-			T::Currency::reserve(&proposer, bond)
-				.map_err(|_| Error::<T, I>::InsufficientProposersBalance)?;
+			let current_block = <frame_system::Pallet<T>>::block_number();
 
-			let c = Self::proposal_count();
-			<ProposalCount<T, I>>::put(c + 1);
-			<Proposals<T, I>>::insert(c, Proposal { proposer, value, beneficiary, bond });
+			if (current_block % T::SpendPeriod::get()).lt(&T::AllowedProposalPeriod::get()) &&
+				cycle == true
+			{
+				let chunk: <<T as Config<I>>::Currency as Currency<
+					<T as frame_system::Config>::AccountId,
+				>>::Balance;
+				if segments.gt(&0) {
+					chunk = value / segments.into();
+				} else {
+					chunk = value;
+				}
 
-			Self::deposit_event(Event::Proposed { proposal_index: c });
+				let bond = Self::calculate_bond(value);
+				T::Currency::reserve(&proposer, bond)
+					.map_err(|_| Error::<T, I>::InsufficientProposersBalance)?;
+
+				let c_proposals = Self::proposal_count();
+				<ProposalCount<T, I>>::put(c_proposals + 1);
+				<Proposals<T, I>>::insert(
+					c_proposals,
+					Proposal {
+						proposer: proposer.clone(),
+						value: chunk.clone(),
+						beneficiary: beneficiary.clone(),
+						bond,
+						segments,
+						remaining_occurs: segments,
+						cycle,
+					},
+				);
+
+				Self::deposit_event(Event::Proposed { proposal_index: c_proposals });
+			} else {
+				let chunk: <<T as Config<I>>::Currency as Currency<
+					<T as frame_system::Config>::AccountId,
+				>>::Balance;
+				if segments.gt(&0) {
+					chunk = value / segments.into();
+				} else {
+					chunk = value;
+				}
+				let bond = Self::calculate_bond(value);
+				T::Currency::reserve(&proposer, bond)
+					.map_err(|_| Error::<T, I>::InsufficientProposersBalance)?;
+
+				let w_proposals = Self::waiting_proposal_count();
+				<WaitingProposalCount<T, I>>::put(w_proposals + 1);
+				<WaitingProposals<T, I>>::insert(
+					w_proposals,
+					Proposal {
+						proposer: proposer.clone(),
+						value: chunk.clone(),
+						beneficiary: beneficiary.clone(),
+						bond,
+						segments,
+						remaining_occurs: segments,
+						cycle,
+					},
+				);
+
+				Self::deposit_event(Event::WaitingProposed { proposal_index: w_proposals });
+			}
 			Ok(())
 		}
 
@@ -407,39 +494,39 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Propose and approve a spend of treasury funds.
-		///
-		/// - `origin`: Must be `SpendOrigin` with the `Success` value being at least `amount`.
-		/// - `amount`: The amount to be transferred from the treasury to the `beneficiary`.
-		/// - `beneficiary`: The destination account for the transfer.
-		///
-		/// NOTE: For record-keeping purposes, the proposer is deemed to be equivalent to the
-		/// beneficiary.
-		#[pallet::weight(T::WeightInfo::spend())]
-		pub fn spend(
-			origin: OriginFor<T>,
-			#[pallet::compact] amount: BalanceOf<T, I>,
-			beneficiary: <T::Lookup as StaticLookup>::Source,
-		) -> DispatchResult {
-			let max_amount = T::SpendOrigin::ensure_origin(origin)?;
-			let beneficiary = T::Lookup::lookup(beneficiary)?;
+		// /// Propose and approve a spend of treasury funds.
+		// ///
+		// /// - `origin`: Must be `SpendOrigin` with the `Success` value being at least `amount`.
+		// /// - `amount`: The amount to be transferred from the treasury to the `beneficiary`.
+		// /// - `beneficiary`: The destination account for the transfer.
+		// ///
+		// /// NOTE: For record-keeping purposes, the proposer is deemed to be equivalent to the
+		// /// beneficiary.
+		// #[pallet::weight(T::WeightInfo::spend())]
+		// pub fn spend(
+		// 	origin: OriginFor<T>,
+		// 	#[pallet::compact] amount: BalanceOf<T, I>,
+		// 	beneficiary: <T::Lookup as StaticLookup>::Source,
+		// ) -> DispatchResult {
+		// 	let max_amount = T::SpendOrigin::ensure_origin(origin)?;
+		// 	let beneficiary = T::Lookup::lookup(beneficiary)?;
 
-			ensure!(amount <= max_amount, Error::<T, I>::InsufficientPermission);
-			let proposal_index = Self::proposal_count();
-			Approvals::<T, I>::try_append(proposal_index)
-				.map_err(|_| Error::<T, I>::TooManyApprovals)?;
-			let proposal = Proposal {
-				proposer: beneficiary.clone(),
-				value: amount,
-				beneficiary: beneficiary.clone(),
-				bond: Default::default(),
-			};
-			Proposals::<T, I>::insert(proposal_index, proposal);
-			ProposalCount::<T, I>::put(proposal_index + 1);
+		// 	ensure!(amount <= max_amount, Error::<T, I>::InsufficientPermission);
+		// 	let proposal_index = Self::proposal_count();
+		// 	Approvals::<T, I>::try_append(proposal_index)
+		// 		.map_err(|_| Error::<T, I>::TooManyApprovals)?;
+		// 	let proposal = Proposal {
+		// 		proposer: beneficiary.clone(),
+		// 		value: amount,
+		// 		beneficiary: beneficiary.clone(),
+		// 		bond: Default::default(),
+		// 	};
+		// 	Proposals::<T, I>::insert(proposal_index, proposal);
+		// 	ProposalCount::<T, I>::put(proposal_index + 1);
 
-			Self::deposit_event(Event::SpendApproved { proposal_index, amount, beneficiary });
-			Ok(())
-		}
+		// 	Self::deposit_event(Event::SpendApproved { proposal_index, amount, beneficiary });
+		// 	Ok(())
+		// }
 
 		/// Force a previously approved proposal to be removed from the approval queue.
 		/// The original deposit will no longer be returned.
@@ -511,10 +598,20 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 			let proposals_approvals_len = v.len() as u32;
 			v.retain(|&index| {
 				// Should always be true, but shouldn't panic if false or we're screwed.
-				if let Some(p) = Self::proposals(index) {
+				if let Some(mut p) = Self::proposals(index) {
 					if p.value <= budget_remaining {
 						budget_remaining -= p.value;
-						<Proposals<T, I>>::remove(index);
+
+						if p.remaining_occurs.gt(&0) {
+							p.remaining_occurs = p.remaining_occurs - 1;
+						}
+
+						if p.remaining_occurs.le(&0) {
+							<Proposals<T, I>>::remove(index);
+						} else {
+							<Proposals<T, I>>::remove(index);
+							<Proposals<T, I>>::insert(index, p.clone());
+						}
 
 						// return their deposit.
 						let err_amount = T::Currency::unreserve(&p.proposer, p.bond);
@@ -530,6 +627,19 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 						});
 						false
 					} else {
+						if p.remaining_occurs.gt(&0) {
+							p.remaining_occurs = p.remaining_occurs - 1;
+							<Proposals<T, I>>::remove(index);
+							<Proposals<T, I>>::insert(index, p.clone());
+						} else {
+							<Proposals<T, I>>::remove(index);
+							<Proposals<T, I>>::insert(index, p.clone());
+						}
+
+						if p.remaining_occurs.eq(&0) && p.segments.gt(&0) {
+							<Proposals<T, I>>::remove(index);
+						}
+
 						missed_any = true;
 						true
 					}
@@ -571,6 +681,21 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 			print("Inconsistent state - couldn't settle imbalance for funds spent by treasury");
 			// Nothing else to do here.
 			drop(problem);
+		}
+
+		let w_proposals = Self::waiting_proposal_count();
+		for i in 0..w_proposals {
+			let c_proposals = Self::proposal_count();
+			if let Some(w) = Self::waiting_proposals(i) {
+				<ProposalCount<T, I>>::put(c_proposals + 1);
+				<Proposals<T, I>>::insert(c_proposals, w.clone());
+			}
+
+			<WaitingProposalCount<T, I>>::put(w_proposals - 1);
+			<WaitingProposals<T, I>>::remove(i);
+
+			Self::deposit_event(Event::WaitingProposalTransfered { proposal_index: w_proposals });
+			Self::deposit_event(Event::Proposed { proposal_index: c_proposals })
 		}
 
 		Self::deposit_event(Event::Rollover { rollover_balance: budget_remaining });
