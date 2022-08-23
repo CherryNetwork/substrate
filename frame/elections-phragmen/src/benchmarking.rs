@@ -37,10 +37,10 @@ fn endowed_account<T: Config>(name: &'static str, index: u32) -> T::AccountId {
 	// Fund each account with at-least his stake but still a sane amount as to not mess up
 	// the vote calculation.
 	let amount = default_stake::<T>(MAX_VOTERS) * BalanceOf::<T>::from(BALANCE_FACTOR);
-	let _ = T::Currency::make_free_balance_be(&account, amount);
+	let _ = <T as pallet::Config>::Currency::make_free_balance_be(&account, amount);
 	// important to increase the total issuance since T::CurrencyToVote will need it to be sane for
 	// phragmen to work.
-	T::Currency::issue(amount);
+	<T as pallet::Config>::Currency::issue(amount);
 
 	account
 }
@@ -52,7 +52,7 @@ fn as_lookup<T: Config>(account: T::AccountId) -> Lookup<T> {
 
 /// Get a reasonable amount of stake based on the execution trait's configuration
 fn default_stake<T: Config>(num_votes: u32) -> BalanceOf<T> {
-	let min = T::Currency::minimum_balance();
+	let min = <T as pallet::Config>::Currency::minimum_balance();
 	Elections::<T>::deposit_of(num_votes as usize).max(min)
 }
 

@@ -26,6 +26,8 @@ sp-io = { version = "6.0.0", default-features = false, path = "../../primitives/
 sp-npos-elections = { version = "4.0.0-dev", default-features = false, path = "../../primitives/npos-elections" }
 sp-runtime = { version = "6.0.0", default-features = false, path = "../../primitives/runtime" }
 sp-std = { version = "4.0.0", default-features = false, path = "../../primitives/std" }
+pallet-assets = { version = "4.0.0-dev", default-features = false, path = "../assets" }
+pallet-balances = { version = "4.0.0-dev", default-features = false, path = "../balances" }
 
 [dev-dependencies]
 pallet-balances = { version = "4.0.0-dev", path = "../balances" }
@@ -46,6 +48,8 @@ std = [
 	"sp-npos-elections/std",
 	"sp-runtime/std",
 	"sp-std/std",
+	"pallet-balances/std",
+	"pallet-assets/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
