@@ -46,7 +46,7 @@ use pallet_assets as assets;
 use scale_info::TypeInfo;
 use sp_io::storage;
 use sp_runtime::{traits::Hash, RuntimeDebug};
-use sp_std::{marker::PhantomData, prelude::*, result};
+use sp_std::{marker::PhantomData, prelude::*, result, vec};
 
 use frame_support::{
 	codec::{Decode, Encode, MaxEncodedLen},
