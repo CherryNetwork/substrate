@@ -334,7 +334,10 @@ pub mod pallet {
 			ensure!(!allowed_votes.is_zero(), Error::<T>::UnableToVote);
 			ensure!(votes.len() <= allowed_votes, Error::<T>::TooManyVotes);
 
-			ensure!(value > <T as pallet::Config>::Currency::minimum_balance(), Error::<T>::LowBalance);
+			ensure!(
+				value > <T as pallet::Config>::Currency::minimum_balance(),
+				Error::<T>::LowBalance
+			);
 
 			// Reserve bond.
 			let new_deposit = Self::deposit_of(votes.len());
@@ -357,7 +360,12 @@ pub mod pallet {
 
 			// Amount to be locked up.
 			let locked_stake = value.min(<T as pallet::Config>::Currency::free_balance(&who));
-			<T as pallet::Config>::Currency::set_lock(T::PalletId::get(), &who, locked_stake, WithdrawReasons::all());
+			<T as pallet::Config>::Currency::set_lock(
+				T::PalletId::get(),
+				&who,
+				locked_stake,
+				WithdrawReasons::all(),
+			);
 
 			Voting::<T>::insert(&who, Voter { votes, deposit: new_deposit, stake: locked_stake });
 			Ok(None.into())
@@ -373,7 +381,7 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 			let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
 			ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
-			
+
 			ensure!(Self::is_voter(&who), Error::<T>::MustBeVoter);
 			Self::do_remove_voter(&who);
 			Ok(None.into())
@@ -462,7 +470,7 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 			let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
 			ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
-			
+
 			match renouncing {
 				Renouncing::Member => {
 					let _ = Self::remove_and_replace_member(&who, false)
@@ -645,9 +653,9 @@ pub mod pallet {
 	pub type Members<T: Config> =
 		StorageValue<_, Vec<SeatHolder<T::AccountId, BalanceOf<T>>>, ValueQuery>;
 
-		#[pallet::storage]
-		#[pallet::getter(fn govtokenid)]
-		pub type GovTokenId<T: Config> = StorageValue<_, <T as assets::Config>::AssetId, ValueQuery>;
+	#[pallet::storage]
+	#[pallet::getter(fn govtokenid)]
+	pub type GovTokenId<T: Config> = StorageValue<_, <T as assets::Config>::AssetId, ValueQuery>;
 
 	/// The current reserved runners-up.
 	///
@@ -786,7 +794,8 @@ impl<T: Config> Pallet<T> {
 
 			// slash or unreserve
 			if slash {
-				let (imbalance, _remainder) = <T as pallet::Config>::Currency::slash_reserved(who, removed.deposit);
+				let (imbalance, _remainder) =
+					<T as pallet::Config>::Currency::slash_reserved(who, removed.deposit);
 				debug_assert!(_remainder.is_zero());
 				T::LoserCandidate::on_unbalanced(imbalance);
 				Self::deposit_event(Event::SeatHolderSlashed {
@@ -936,8 +945,11 @@ impl<T: Config> Pallet<T> {
 
 		// helper closures to deal with balance/stake.
 		let total_issuance = <T as pallet::Config>::Currency::total_issuance();
-		let to_votes = |b: BalanceOf<T>| <T as pallet::Config>::CurrencyToVote::to_vote(b, total_issuance);
-		let to_balance = |e: ExtendedBalance| <T as pallet::Config>::CurrencyToVote::to_currency(e, total_issuance);
+		let to_votes =
+			|b: BalanceOf<T>| <T as pallet::Config>::CurrencyToVote::to_vote(b, total_issuance);
+		let to_balance = |e: ExtendedBalance| {
+			<T as pallet::Config>::CurrencyToVote::to_currency(e, total_issuance)
+		};
 
 		let mut num_edges: u32 = 0;
 
@@ -1068,7 +1080,8 @@ impl<T: Config> Pallet<T> {
 						if new_members_ids_sorted.binary_search(c).is_err() &&
 							new_runners_up_ids_sorted.binary_search(c).is_err()
 						{
-							let (imbalance, _) = <T as pallet::Config>::Currency::slash_reserved(c, *d);
+							let (imbalance, _) =
+								<T as pallet::Config>::Currency::slash_reserved(c, *d);
 							T::LoserCandidate::on_unbalanced(imbalance);
 							Self::deposit_event(Event::CandidateSlashed {
 								candidate: c.clone(),
@@ -1126,7 +1139,11 @@ impl<T: Config> Pallet<T> {
 					Self::deposit_event(Event::ElectionError);
 				});
 
-		<T as pallet::Config>::WeightInfo::election_phragmen(weight_candidates, weight_voters, weight_edges)
+		<T as pallet::Config>::WeightInfo::election_phragmen(
+			weight_candidates,
+			weight_voters,
+			weight_edges,
+		)
 	}
 }
 

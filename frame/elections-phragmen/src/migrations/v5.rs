@@ -21,7 +21,12 @@ pub fn migrate<T: Config>(to_migrate: Vec<T::AccountId>) -> Weight {
 				Voting::<T>::insert(&who, voter);
 
 				let pallet_id = T::PalletId::get();
-				<T as pallet::Config>::Currency::set_lock(pallet_id, who, free_balance, WithdrawReasons::all());
+				<T as pallet::Config>::Currency::set_lock(
+					pallet_id,
+					who,
+					free_balance,
+					WithdrawReasons::all(),
+				);
 
 				weight = weight.saturating_add(T::DbWeight::get().writes(2));
 			}
