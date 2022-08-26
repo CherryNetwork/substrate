@@ -687,6 +687,12 @@ pub mod pallet {
 			/// Previous code hash of the contract.
 			old_code_hash: T::Hash,
 		},
+
+		/// A contract was called either by a plain account or another contract.
+		Called { caller: T::AccountId, contract: T::AccountId },
+
+		/// A contract delegate called a code hash.
+		DelegateCalled { contract: T::AccountId, code_hash: CodeHash<T> },
 	}
 
 	#[pallet::error]
