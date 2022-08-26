@@ -953,7 +953,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 
 		let dispatch_weight = proposal.get_dispatch_info().weight;
 		// let origin = RawOrigin::Members(yes_votes, seats).into();
-		let result = proposal.dispatch(frame_system::RawOrigin::Root.into());
+		let result = proposal.dispatch(frame_support::dispatch::RawOrigin::Root.into());
 		Self::deposit_event(Event::Executed(
 			proposal_hash,
 			result.map(|_| ()).map_err(|e| e.error),
