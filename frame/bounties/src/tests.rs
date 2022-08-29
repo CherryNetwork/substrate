@@ -110,6 +110,8 @@ parameter_types! {
 	pub static Burn: Permill = Permill::from_percent(50);
 	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
 	pub const TreasuryPalletId2: PalletId = PalletId(*b"py/trsr2");
+   // TODO(elsuizo: 2022-08-29): check if this is ok i put the same value from the Cherry-node
+   pub const AllowedProposalPeriod: u64 = 2;
 }
 
 impl pallet_treasury::Config for Test {
@@ -128,7 +130,8 @@ impl pallet_treasury::Config for Test {
 	type WeightInfo = ();
 	type SpendFunds = Bounties;
 	type MaxApprovals = ConstU32<100>;
-	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<u64>;
+	// type SpendOrigin = frame_support::traits::NeverEnsureOrigin<u64>;
+	type AllowedProposalPeriod = AllowedProposalPeriod;
 }
 
 impl pallet_treasury::Config<Instance1> for Test {
@@ -147,7 +150,8 @@ impl pallet_treasury::Config<Instance1> for Test {
 	type WeightInfo = ();
 	type SpendFunds = Bounties1;
 	type MaxApprovals = ConstU32<100>;
-	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<u64>;
+	// type SpendOrigin = frame_support::traits::NeverEnsureOrigin<u64>;
+	type AllowedProposalPeriod = AllowedProposalPeriod;
 }
 
 parameter_types! {
