@@ -112,6 +112,7 @@ parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const Burn: Permill = Permill::from_percent(50);
 	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
+   pub const AllowedProposalPeriod: u64 = 2;
 }
 
 impl pallet_treasury::Config for Test {
@@ -130,7 +131,8 @@ impl pallet_treasury::Config for Test {
 	type WeightInfo = ();
 	type SpendFunds = Bounties;
 	type MaxApprovals = ConstU32<100>;
-	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<u64>;
+	// type SpendOrigin = frame_support::traits::NeverEnsureOrigin<u64>;
+	type AllowedProposalPeriod = AllowedProposalPeriod;
 }
 parameter_types! {
 	// This will be 50% of the bounty fee.

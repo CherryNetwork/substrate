@@ -1276,6 +1276,7 @@ mod tests {
 		type Freezer = ();
 		type WeightInfo = ();
 		type Extra = ();
+		type AssetAccountDeposit = AssetDeposit;
 	}
 
 	frame_support::parameter_types! {
