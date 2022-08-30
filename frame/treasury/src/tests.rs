@@ -164,8 +164,10 @@ fn genesis_config_works() {
 
 #[test]
 fn spend_origin_permissioning_works() {
+	// need to look at it again @zycon91 cc @elsuizo
 	new_test_ext().execute_with(|| {
-		assert_noop!(Treasury::propose_spend(Origin::signed(1), 1, 1, 0, false), BadOrigin);
+		Balances::make_free_balance_be(&10, 101);
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 1, 1, 0, true));
 		assert_noop!(
 			Treasury::propose_spend(Origin::signed(10), 6, 1, 1, true),
 			Error::<Test>::InsufficientPermission
@@ -190,20 +192,21 @@ fn spend_origin_works() {
 	new_test_ext().execute_with(|| {
 		// Check that accumulate works when we have Some value in Dummy already.
 		Balances::make_free_balance_be(&Treasury::account_id(), 101);
-		assert_ok!(Treasury::propose_spend(Origin::signed(10), 5, 5, 1, true));
-		// assert_ok!(Treasury::propose_spend(Origin::signed(10), 5, 6, 1, true));
-		// assert_ok!(Treasury::propose_spend(Origin::signed(10), 5, 6, 1, true));
-		// assert_ok!(Treasury::propose_spend(Origin::signed(10), 5, 6, 1, true));
-		// assert_ok!(Treasury::propose_spend(Origin::signed(11), 10, 6, 1, true));
-		// assert_ok!(Treasury::propose_spend(Origin::signed(12), 20, 6, 1, true));
-		// assert_ok!(Treasury::propose_spend(Origin::signed(13), 50, 6, 1, true));
+		Balances::make_free_balance_be(&10, 101);
+		assert_ok!(Treasury::propose_spend(Origin::signed(10), 15, 6, 0, true));
+		assert_ok!(Treasury::propose_spend(Origin::signed(10), 10, 6, 0, true));
+		assert_ok!(Treasury::propose_spend(Origin::signed(10), 25, 6, 0, true));
+		assert_ok!(Treasury::propose_spend(Origin::signed(10), 50, 6, 0, true));
 
-		// <Treasury as OnInitialize<u64>>::on_initialize(1);
-		// assert_eq!(Balances::free_balance(6), 0);
-		//
-		// <Treasury as OnInitialize<u64>>::on_initialize(2);
-		// assert_eq!(Balances::free_balance(6), 100);
-		// assert_eq!(Treasury::pot(), 0);
+		assert_eq!(Balances::free_balance(6), 0);
+		assert_ok!(Treasury::approve_proposal(Origin::root(), 0));
+		assert_ok!(Treasury::approve_proposal(Origin::root(), 1));
+		assert_ok!(Treasury::approve_proposal(Origin::root(), 2));
+		assert_ok!(Treasury::approve_proposal(Origin::root(), 3));
+
+		<Treasury as OnInitialize<u64>>::on_initialize(2);
+		assert_eq!(Balances::free_balance(6), 100);
+		assert_eq!(Treasury::pot(), 0);
 	});
 }
 
@@ -342,11 +345,12 @@ fn pot_underflow_should_not_diminish() {
 		Balances::make_free_balance_be(&Treasury::account_id(), 101);
 		assert_eq!(Treasury::pot(), 100);
 
-		assert_ok!(Treasury::propose_spend(Origin::signed(0), 150, 3, 1, true));
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 150, 3, 0, true));
 		assert_ok!(Treasury::approve_proposal(Origin::root(), 0));
 
 		<Treasury as OnInitialize<u64>>::on_initialize(2);
 		assert_eq!(Treasury::pot(), 100); // Pot hasn't changed
+		assert_ok!(Treasury::approve_proposal(Origin::root(), 0));
 
 		let _ = Balances::deposit_into_existing(&Treasury::account_id(), 100).unwrap();
 		<Treasury as OnInitialize<u64>>::on_initialize(4);
@@ -394,7 +398,7 @@ fn inexistent_account_works() {
 		assert_eq!(Balances::free_balance(Treasury::account_id()), 0); // Account does not exist
 		assert_eq!(Treasury::pot(), 0); // Pot is empty
 
-		assert_ok!(Treasury::propose_spend(Origin::signed(0), 99, 3, 1, true));
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 50, 3, 0, true));
 		assert_ok!(Treasury::approve_proposal(Origin::root(), 0));
 		assert_ok!(Treasury::propose_spend(Origin::signed(0), 1, 3, 1, true));
 		assert_ok!(Treasury::approve_proposal(Origin::root(), 1));
@@ -405,11 +409,12 @@ fn inexistent_account_works() {
 		Balances::make_free_balance_be(&Treasury::account_id(), 100);
 		assert_eq!(Treasury::pot(), 99); // Pot now contains funds
 		assert_eq!(Balances::free_balance(Treasury::account_id()), 100); // Account does exist
+		assert_ok!(Treasury::approve_proposal(Origin::root(), 0));
 
 		<Treasury as OnInitialize<u64>>::on_initialize(4);
 
-		assert_eq!(Treasury::pot(), 50); // Pot has changed
-		assert_eq!(Balances::free_balance(3), 99); // Balance of `3` has changed
+		assert_eq!(Treasury::pot(), 25); // Pot has changed
+		assert_eq!(Balances::free_balance(3), 50); // Balance of `3` has changed
 	});
 }
 
@@ -457,7 +462,7 @@ fn remove_already_removed_approval_fails() {
 	new_test_ext().execute_with(|| {
 		Balances::make_free_balance_be(&Treasury::account_id(), 101);
 
-		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3, 0, false));
+		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3, 0, true));
 		assert_ok!(Treasury::approve_proposal(Origin::root(), 0));
 		assert_eq!(Treasury::approvals(), vec![0]);
 		assert_ok!(Treasury::remove_approval(Origin::root(), 0));
