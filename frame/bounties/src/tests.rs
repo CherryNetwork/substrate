@@ -110,7 +110,6 @@ parameter_types! {
 	pub static Burn: Permill = Permill::from_percent(50);
 	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
 	pub const TreasuryPalletId2: PalletId = PalletId(*b"py/trsr2");
-   // TODO(elsuizo: 2022-08-29): check if this is ok i put the same value from the Cherry-node
    pub const AllowedProposalPeriod: u64 = 2;
 }
 
@@ -159,7 +158,6 @@ parameter_types! {
 	pub const CuratorDepositMultiplier: Permill = Permill::from_percent(50);
 	pub const CuratorDepositMax: Balance = 1_000;
 	pub const CuratorDepositMin: Balance = 3;
-
 }
 
 impl Config for Test {
