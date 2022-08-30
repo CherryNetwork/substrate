@@ -74,7 +74,7 @@ pub mod pallet {
 	};
 	use scale_info::TypeInfo;
 	use sp_core::offchain::OpaqueMultiaddr;
-	use sp_std::{collections::btree_map::BTreeMap, vec::Vec};
+	use sp_std::{collections::btree_map::BTreeMap, vec::Vec, convert::TryInto};
 
 	type AccountOf<T> = <T as frame_system::Config>::AccountId;
 	type BalanceOf<T> =
