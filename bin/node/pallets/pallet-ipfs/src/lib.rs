@@ -30,6 +30,7 @@ pub mod crypto {
 		traits::Verify,
 		MultiSignature, MultiSigner,
 	};
+	use sp_std::{convert::TryFrom};
 
 	app_crypto!(sr25519, KEY_TYPE);
 
