@@ -108,7 +108,7 @@ pub mod pallet {
 	}
 
 	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
 	#[pallet::storage]
@@ -219,18 +219,18 @@ pub mod pallet {
 			0
 		}
 
-		fn offchain_worker(block_no: BlockNumberFor<T>) {
-			// handle data requests each block
-			if let Err(e) = Self::handle_data_requests() {
-				log::error!("IPFS: Encountered an error while processing data requests: {:?}", e);
-			}
+		// fn offchain_worker(block_no: BlockNumberFor<T>) {
+		// 	// handle data requests each block
+		// 	if let Err(e) = Self::handle_data_requests() {
+		// 		log::error!("IPFS: Encountered an error while processing data requests: {:?}", e);
+		// 	}
 
-			if block_no % 5u32.into() == 0u32.into() {
-				if let Err(e) = Self::print_metadata() {
-					log::error!("IPFS: Encountered an error while obtaining metadata: {:?}", e);
-				}
-			}
-		}
+		// 	if block_no % 5u32.into() == 0u32.into() {
+		// 		if let Err(e) = Self::print_metadata() {
+		// 			log::error!("IPFS: Encountered an error while obtaining metadata: {:?}", e);
+		// 		}
+		// 	}
+		// }
 	}
 
 	#[pallet::call]
