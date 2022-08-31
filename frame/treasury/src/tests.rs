@@ -162,30 +162,28 @@ fn genesis_config_works() {
 	});
 }
 
-#[test]
-fn spend_origin_permissioning_works() {
-	// need to look at it again @zycon91 cc @elsuizo
-	new_test_ext().execute_with(|| {
-		Balances::make_free_balance_be(&10, 101);
-		assert_ok!(Treasury::propose_spend(Origin::signed(0), 1, 1, 0, true));
-		assert_noop!(
-			Treasury::propose_spend(Origin::signed(10), 6, 1, 1, true),
-			Error::<Test>::InsufficientPermission
-		);
-		assert_noop!(
-			Treasury::propose_spend(Origin::signed(11), 11, 1, 1, true),
-			Error::<Test>::InsufficientPermission
-		);
-		assert_noop!(
-			Treasury::propose_spend(Origin::signed(12), 21, 1, 1, true),
-			Error::<Test>::InsufficientPermission
-		);
-		assert_noop!(
-			Treasury::propose_spend(Origin::signed(13), 51, 1, 1, true),
-			Error::<Test>::InsufficientPermission
-		);
-	});
-}
+// #[test]
+// fn spend_origin_permissioning_works() {
+// 	new_test_ext().execute_with(|| {
+// 		assert_noop!(Treasury::spend(Origin::signed(1), 1, 1), BadOrigin);
+// 		assert_noop!(
+// 			Treasury::spend(Origin::signed(10), 6, 1),
+// 			Error::<Test>::InsufficientPermission
+// 		);
+// 		assert_noop!(
+// 			Treasury::spend(Origin::signed(11), 11, 1),
+// 			Error::<Test>::InsufficientPermission
+// 		);
+// 		assert_noop!(
+// 			Treasury::spend(Origin::signed(12), 21, 1),
+// 			Error::<Test>::InsufficientPermission
+// 		);
+// 		assert_noop!(
+// 			Treasury::spend(Origin::signed(13), 51, 1),
+// 			Error::<Test>::InsufficientPermission
+// 		);
+// 	});
+// }
 
 #[test]
 fn spend_origin_works() {
