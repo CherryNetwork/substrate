@@ -687,7 +687,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		let proposal_hash = T::Hashing::hash_of(&proposal);
 		ensure!(!<ProposalOf<T, I>>::contains_key(proposal_hash), Error::<T, I>::DuplicateProposal);
 
-		let seats = Self::members().len() as MemberCount;
+		// let seats = Self::members().len() as MemberCount;
 		let result = proposal.dispatch(frame_system::RawOrigin::Root.into());
 		Self::deposit_event(Event::Executed {
 			proposal_hash,
@@ -903,7 +903,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	/// - `P` is number of active proposals
 	fn do_approve_proposal(
 		// seats: MemberCount,
-		yes_votes: MemberCount,
+		_yes_votes: MemberCount,
 		proposal_hash: T::Hash,
 		proposal: <T as Config<I>>::Proposal,
 	) -> (Weight, u32) {

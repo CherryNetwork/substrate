@@ -130,6 +130,7 @@ parameter_types! {
 	pub const Burn: Permill = Permill::from_percent(50);
 	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
 	pub const TreasuryPalletId2: PalletId = PalletId(*b"py/trsr2");
+   pub const AllowedProposalPeriod: u64 = 2;
 }
 impl pallet_treasury::Config for Test {
 	type PalletId = TreasuryPalletId;
@@ -147,7 +148,8 @@ impl pallet_treasury::Config for Test {
 	type WeightInfo = ();
 	type SpendFunds = ();
 	type MaxApprovals = ConstU32<100>;
-	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<u64>;
+	// type SpendOrigin = frame_support::traits::NeverEnsureOrigin<u64>;
+	type AllowedProposalPeriod = AllowedProposalPeriod;
 }
 
 impl pallet_treasury::Config<Instance1> for Test {
@@ -166,7 +168,8 @@ impl pallet_treasury::Config<Instance1> for Test {
 	type WeightInfo = ();
 	type SpendFunds = ();
 	type MaxApprovals = ConstU32<100>;
-	type SpendOrigin = frame_support::traits::NeverEnsureOrigin<u64>;
+	// type SpendOrigin = frame_support::traits::NeverEnsureOrigin<u64>;
+	type AllowedProposalPeriod = AllowedProposalPeriod;
 }
 
 parameter_types! {
