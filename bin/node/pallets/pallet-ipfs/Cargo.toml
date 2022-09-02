@@ -27,7 +27,7 @@ log = { version = "0.4.17", default-features = false }
 sp-keystore = { version = "0.12.0", path = "../../../../primitives/keystore", optional = true }
 pallet-assets = { version = "4.0.0-dev", default-features = false, path = "../../../../frame/assets" }
 serde = { version = "1.0.136", default-features = false }
-sp-application-crypto = { version = "6.0.0", path = "../../../../primitives/application-crypto" }
+sp-application-crypto = { version = "6.0.0", path = "../../../../primitives/application-crypto", default-features = false }
 
 [dev-dependencies]
 sp-core = { version = "6.0.0", path = "../../../../primitives/core", default-features = false }
@@ -44,6 +44,7 @@ std = [
 	"scale-info/std",
 	"sp-io/std",
 	"sp-keystore/std",
+	"sp-application-crypto/std",
 	"sp-core/std",
 	"sp-runtime/std",
 	"sp-std/std",
