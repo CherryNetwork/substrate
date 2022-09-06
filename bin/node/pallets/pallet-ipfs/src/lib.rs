@@ -30,7 +30,7 @@ pub mod crypto {
 		traits::Verify,
 		MultiSignature, MultiSigner,
 	};
-	use sp_std::{convert::TryFrom};
+	use sp_std::convert::TryFrom;
 
 	app_crypto!(sr25519, KEY_TYPE);
 
@@ -74,7 +74,7 @@ pub mod pallet {
 	};
 	use scale_info::TypeInfo;
 	use sp_core::offchain::OpaqueMultiaddr;
-	use sp_std::{collections::btree_map::BTreeMap, vec::Vec, convert::TryInto};
+	use sp_std::{collections::btree_map::BTreeMap, convert::TryInto, vec::Vec};
 
 	type AccountOf<T> = <T as frame_system::Config>::AccountId;
 	type BalanceOf<T> =
