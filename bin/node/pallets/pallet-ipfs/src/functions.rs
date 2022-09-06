@@ -1,3 +1,7 @@
+use sp_core::offchain::Duration;
+use sp_io::offchain::timestamp;
+use sp_runtime::offchain::http;
+
 use super::*;
 
 impl<T: Config> Pallet<T> {
@@ -25,6 +29,29 @@ impl<T: Config> Pallet<T> {
 				},
 			None => Err(<Error<T>>::IpfsNotExist),
 		}
+	}
+
+	pub fn ipfs_repo_stats() {
+		let request = http::Request::get("http://127.0.0.1:5001/api/v0/stats/repo")
+			.method(http::Method::Post);
+
+		let timeout = timestamp().add(Duration::from_millis(3000));
+
+		let pending = request.deadline(timeout).send().map_err(|_| http::Error::IoError).unwrap();
+
+		let response = pending
+			.try_wait(timeout)
+			.map_err(|_| http::Error::DeadlineReached)
+			.unwrap()
+			.unwrap();
+		let rsp: serde_json::Value = serde_json::from_str(
+			sp_std::str::from_utf8(&response.body().collect::<Vec<u8>>())
+				.map_err(|_| <Error<T>>::AccNotExist)
+				.unwrap(),
+		)
+		.unwrap();
+
+		log::info!("{:?}\n\n", rsp);
 	}
 
 	// pub fn ipfs_request(
@@ -394,23 +421,6 @@ impl<T: Config> Pallet<T> {
 	// 			},
 	// 		}
 	// 	}
-	// 	Ok(())
-	// }
-
-	// pub fn print_metadata() -> Result<(), Error<T>> {
-	// 	let deadline = Some(timestamp().add(Duration::from_millis(5_000)));
-
-	// 	let peers =
-	// 		if let IpfsResponse::Peers(peers) = Self::ipfs_request(IpfsRequest::Peers, deadline)? {
-	// 			peers
-	// 		} else {
-	// 			unreachable!("only Peers can be a response for that request type: qed");
-	// 		};
-
-	// 	let peer_count = peers.len();
-
-	// 	log::info!("IPFS: currently connencted to {} peers", &peer_count,);
-
 	// 	Ok(())
 	// }
 }

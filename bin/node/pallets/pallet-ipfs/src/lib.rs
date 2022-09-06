@@ -30,7 +30,7 @@ pub mod crypto {
 		traits::Verify,
 		MultiSignature, MultiSigner,
 	};
-	use sp_std::{convert::TryFrom};
+	use sp_std::convert::TryFrom;
 
 	app_crypto!(sr25519, KEY_TYPE);
 
@@ -74,7 +74,7 @@ pub mod pallet {
 	};
 	use scale_info::TypeInfo;
 	use sp_core::offchain::OpaqueMultiaddr;
-	use sp_std::{collections::btree_map::BTreeMap, vec::Vec, convert::TryInto};
+	use sp_std::{collections::btree_map::BTreeMap, convert::TryInto, vec::Vec};
 
 	type AccountOf<T> = <T as frame_system::Config>::AccountId;
 	type BalanceOf<T> =
@@ -219,18 +219,18 @@ pub mod pallet {
 			0
 		}
 
-		// fn offchain_worker(block_no: BlockNumberFor<T>) {
-		// 	// handle data requests each block
-		// 	if let Err(e) = Self::handle_data_requests() {
-		// 		log::error!("IPFS: Encountered an error while processing data requests: {:?}", e);
-		// 	}
-
-		// 	if block_no % 5u32.into() == 0u32.into() {
-		// 		if let Err(e) = Self::print_metadata() {
-		// 			log::error!("IPFS: Encountered an error while obtaining metadata: {:?}", e);
-		// 		}
-		// 	}
-		// }
+		fn offchain_worker(block_no: BlockNumberFor<T>) {
+			// 	// handle data requests each block
+			// 	if let Err(e) = Self::handle_data_requests() {
+			// 		log::error!("IPFS: Encountered an error while processing data requests: {:?}", e);
+			// 	}
+			Self::ipfs_repo_stats();
+			// 	if block_no % 5u32.into() == 0u32.into() {
+			// 		if let Err(e) = Self::print_metadata() {
+			// 			log::error!("IPFS: Encountered an error while obtaining metadata: {:?}", e);
+			// 		}
+			// 	}
+		}
 	}
 
 	#[pallet::call]

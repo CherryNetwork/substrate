@@ -1068,6 +1068,19 @@ impl pallet_treasury::Config for Runtime {
 }
 
 parameter_types! {
+	pub const MaxIpfsOwned: u32 = 5;
+}
+
+impl pallet_ipfs::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type AuthorityId = pallet_ipfs::crypto::AuthorityId;
+	type Call = Call;
+	type MaxIpfsOwned = MaxIpfsOwned;
+	type WeightInfo = pallet_ipfs::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
 	pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
 	pub const BountyValueMinimum: Balance = 5 * DOLLARS;
 	pub const BountyDepositBase: Balance = 1 * DOLLARS;
@@ -1638,6 +1651,7 @@ construct_runtime!(
 		NominationPools: pallet_nomination_pools,
 		RankedPolls: pallet_referenda::<Instance2>,
 		RankedCollective: pallet_ranked_collective,
+		Ipfs: pallet_ipfs,
 	}
 );
 
