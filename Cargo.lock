@@ -9945,6 +9945,7 @@ dependencies = [
  "rand 0.7.3",
  "scale-info",
  "serde",
+ "serde_bytes",
  "serde_json",
  "sp-api",
  "sp-application-crypto",
