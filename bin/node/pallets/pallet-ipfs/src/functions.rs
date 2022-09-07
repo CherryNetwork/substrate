@@ -1,6 +1,9 @@
 use sp_core::offchain::Duration;
 use sp_io::offchain::timestamp;
-use sp_runtime::offchain::{http, ipfs::IpfsRequest};
+use sp_runtime::offchain::{
+	http,
+	ipfs::{self, IpfsRequest, IpfsResponse},
+};
 
 use super::*;
 
@@ -33,7 +36,14 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn ipfs_repo_stats() {
-		sp_runtime::offchain::ipfs::start_ipfs_request(IpfsRequest::Pin(Vec::<u8>::new()));
+		match ipfs::start_ipfs_request(IpfsRequest::RepoStats) {
+			Ok(rsp) => {
+				match rsp {
+					IpfsResponse::RepoStats(peos) => log::info!("{:?}", peos),
+				};
+			},
+			Err(_) => todo!(),
+		}
 	}
 
 	// pub fn ipfs_request(

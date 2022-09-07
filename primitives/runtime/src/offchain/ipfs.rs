@@ -15,9 +15,10 @@
 //! A high-level helpers for making IPFS requests from within Offchain Workers.
 
 use crate::offchain::http;
+use scale_info::prelude::format;
 use serde::{Deserialize, Serialize};
 use serde_json;
-use sp_core::offchain::Duration;
+use sp_core::offchain::{Duration, HttpError};
 use sp_io::offchain::timestamp;
 use sp_std::vec::Vec;
 
@@ -44,21 +45,24 @@ pub enum IpfsRequest {
 	Pin(Vec<u8>),
 }
 
-pub fn start_ipfs_request(request: IpfsRequest) {
+pub enum IpfsResponse {
+	RepoStats(RepoStatsResponse),
+}
+
+pub fn start_ipfs_request(request: IpfsRequest) -> Result<IpfsResponse, HttpError> {
+	let mut url = "";
+
 	match request {
 		IpfsRequest::RepoStats => {
-			let request = http::Request::get("http://127.0.0.1:5001/api/v0/stats/repo")
-				.method(http::Method::Post);
+			url = "http://127.0.0.1:5001/api/v0/stats/repo";
+
+			let request = http::Request::get(url).method(http::Method::Post);
 
 			let timeout = timestamp().add(Duration::from_millis(3000));
-			let pending =
-				request.deadline(timeout).send().map_err(|_| http::Error::IoError).unwrap();
+			let pending = request.deadline(timeout).send()?;
 
-			let resopnse = pending
-				.try_wait(timeout)
-				.map_err(|_| http::Error::DeadlineReached)
-				.unwrap()
-				.unwrap();
+			let resopnse =
+				pending.try_wait(timeout).map_err(|_| HttpError::DeadlineReached)?.unwrap();
 
 			let rsp: RepoStatsResponse = serde_json::from_str(
 				sp_std::str::from_utf8(&resopnse.body().collect::<Vec<u8>>())
@@ -67,9 +71,9 @@ pub fn start_ipfs_request(request: IpfsRequest) {
 			)
 			.unwrap();
 
-			log::info!("{:?}\n", rsp);
+			Ok(IpfsResponse::RepoStats(rsp))
 		},
 		IpfsRequest::Cat => todo!(),
-		IpfsRequest::Pin(cid) => todo!(),
+		IpfsRequest::Pin(_cid) => todo!(),
 	}
 }
