@@ -1,6 +1,6 @@
 use sp_core::offchain::Duration;
 use sp_io::offchain::timestamp;
-use sp_runtime::offchain::http;
+use sp_runtime::offchain::{http, ipfs::IpfsRequest};
 
 use super::*;
 
@@ -21,18 +21,19 @@ impl<T: Config> Pallet<T> {
 		acct: &T::AccountId,
 	) -> Result<OwnershipLayer, Error<T>> {
 		match Self::ipfs_asset(cid) {
-			Some(ipfs) =>
+			Some(ipfs) => {
 				if let Some(layer) = ipfs.owners.get_key_value(acct) {
 					Ok(layer.1.clone())
 				} else {
 					Err(<Error<T>>::AccNotExist)
-				},
+				}
+			},
 			None => Err(<Error<T>>::IpfsNotExist),
 		}
 	}
 
 	pub fn ipfs_repo_stats() {
-		sp_runtime::offchain::ipfs::repo_stats();
+		sp_runtime::offchain::ipfs::start_ipfs_request(IpfsRequest::Pin(Vec::<u8>::new()));
 	}
 
 	// pub fn ipfs_request(
