@@ -539,8 +539,8 @@ pub mod pallet {
 				slash_reward_fraction: Default::default(),
 				canceled_payout: Default::default(),
 				stakers: Default::default(),
-				min_nominator_bond: Default::default(),
-				min_validator_bond: Default::default(),
+				min_nominator_bond: 1000000000000000000u128.saturated_into(),
+				min_validator_bond: 250000000000000000000000u128.saturated_into(),
 				max_validator_count: None,
 				max_nominator_count: None,
 			}
