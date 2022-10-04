@@ -35,11 +35,24 @@ impl<T: Config> Pallet<T> {
 		}
 	}
 
+	pub fn ipfs_bitswap_stats() {
+		match ipfs::start_ipfs_request(IpfsRequest::BitswapStats) {
+			Ok(rsp) => {
+				match rsp {
+					IpfsResponse::BitswapStats(stats) => log::info!("{:?}", stats),
+					_ => {},
+				};
+			},
+			Err(_) => todo!(),
+		}
+	}
+
 	pub fn ipfs_repo_stats() {
 		match ipfs::start_ipfs_request(IpfsRequest::RepoStats) {
 			Ok(rsp) => {
 				match rsp {
 					IpfsResponse::RepoStats(peos) => log::info!("{:?}", peos),
+					_ => {},
 				};
 			},
 			Err(_) => todo!(),
