@@ -24,29 +24,17 @@ impl<T: Config> Pallet<T> {
 		acct: &T::AccountId,
 	) -> Result<OwnershipLayer, Error<T>> {
 		match Self::ipfs_asset(cid) {
-			Some(ipfs) => {
+			Some(ipfs) =>
 				if let Some(layer) = ipfs.owners.get_key_value(acct) {
 					Ok(layer.1.clone())
 				} else {
 					Err(<Error<T>>::AccNotExist)
-				}
-			},
+				},
 			None => Err(<Error<T>>::IpfsNotExist),
 		}
 	}
 
-	pub fn ipfs_bitswap_stats() {
-		match ipfs::start_ipfs_request(IpfsRequest::BitswapStats) {
-			Ok(rsp) => {
-				match rsp {
-					IpfsResponse::BitswapStats(stats) => log::info!("{:?}", stats),
-					_ => {},
-				};
-			},
-			Err(_) => todo!(),
-		}
-	}
-
+	// Leaving this here as a reference. - @charmitro
 	pub fn ipfs_repo_stats() {
 		match ipfs::start_ipfs_request(IpfsRequest::RepoStats) {
 			Ok(rsp) => {

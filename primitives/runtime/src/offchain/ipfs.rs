@@ -15,12 +15,11 @@
 //! A high-level helpers for making IPFS requests from within Offchain Workers.
 
 use crate::offchain::http;
-use scale_info::prelude::format;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use sp_core::offchain::{Duration, HttpError};
 use sp_io::offchain::timestamp;
-use sp_std::vec::Vec;
+use sp_std::{borrow::ToOwned, vec::Vec};
 
 /// /stats/bitswap response
 #[derive(Serialize, Deserialize, Debug)]
@@ -67,22 +66,23 @@ pub struct RepoStatsResponse {
 pub enum IpfsRequest {
 	BitswapStats,
 	RepoStats,
-	Cat,
+	Cat(Vec<u8>),
 	Pin(Vec<u8>),
 }
 
 pub enum IpfsResponse {
 	BitswapStats(BitswapStatsResponse),
 	RepoStats(RepoStatsResponse),
+	Cat(Vec<u8>),
+	Pin,
 }
 
 pub fn start_ipfs_request(request: IpfsRequest) -> Result<IpfsResponse, HttpError> {
-	let mut url = "";
 	let timeout = timestamp().add(Duration::from_millis(3000));
 
 	match request {
 		IpfsRequest::BitswapStats => {
-			url = "http://127.0.0.1:5001/api/v0/stats/bitswap";
+			let url = "http://127.0.0.1:5001/api/v0/stats/bitswap";
 			let request = http::Request::get(url).method(http::Method::Post);
 			let pending = request.deadline(timeout).send()?;
 			let response =
@@ -99,7 +99,7 @@ pub fn start_ipfs_request(request: IpfsRequest) -> Result<IpfsResponse, HttpErro
 
 		IpfsRequest::RepoStats => {
 			// TODO: Not sure about the address here. - @charmitro
-			url = "http://127.0.0.1:5001/api/v0/stats/repo";
+			let url = "http://127.0.0.1:5001/api/v0/stats/repo";
 
 			let request = http::Request::get(url).method(http::Method::Post);
 
@@ -117,7 +117,21 @@ pub fn start_ipfs_request(request: IpfsRequest) -> Result<IpfsResponse, HttpErro
 
 			Ok(IpfsResponse::RepoStats(rsp))
 		},
-		IpfsRequest::Cat => todo!(),
+		IpfsRequest::Cat(cid) => {
+			let mut address: scale_info::prelude::string::String =
+				"http://127.0.0.1:5001/api/v0/cat?arg=".to_owned();
+			let url: scale_info::prelude::string::String =
+				scale_info::prelude::string::String::from_utf8(cid).unwrap();
+
+			address.push_str(&url.to_owned());
+
+			let request = http::Request::get(address.as_str()).method(http::Method::Post);
+			let pending = request.deadline(timeout).send()?;
+			let response =
+				pending.try_wait(timeout).map_err(|_| HttpError::DeadlineReached)?.unwrap();
+
+			Ok(IpfsResponse::Cat(response.body().collect::<Vec<u8>>()))
+		},
 		IpfsRequest::Pin(_cid) => todo!(),
 	}
 }
