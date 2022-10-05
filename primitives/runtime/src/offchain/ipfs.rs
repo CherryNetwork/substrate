@@ -77,7 +77,7 @@ pub enum IpfsResponse {
 	Pin,
 }
 
-pub fn start_ipfs_request(request: IpfsRequest) -> Result<IpfsResponse, HttpError> {
+pub fn ipfs_request(request: IpfsRequest) -> Result<IpfsResponse, HttpError> {
 	let timeout = timestamp().add(Duration::from_millis(3000));
 
 	match request {
