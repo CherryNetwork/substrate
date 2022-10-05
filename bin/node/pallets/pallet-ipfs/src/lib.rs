@@ -221,9 +221,9 @@ pub mod pallet {
 
 		fn offchain_worker(block_no: BlockNumberFor<T>) {
 			// 	// handle data requests each block
-			// 	if let Err(e) = Self::handle_data_requests() {
-			// 		log::error!("IPFS: Encountered an error while processing data requests: {:?}", e);
-			// 	}
+			if let Err(e) = Self::handle_data_requests() {
+				log::error!("IPFS: Encountered an error while processing data requests: {:?}", e);
+			}
 			Self::ipfs_repo_stats();
 			// 	if block_no % 5u32.into() == 0u32.into() {
 			// 		if let Err(e) = Self::print_metadata() {
@@ -402,10 +402,11 @@ pub mod pallet {
 		pub fn read_file(origin: OriginFor<T>, addr: Vec<u8>, cid: Vec<u8>) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			ensure!(
-				Self::determine_account_ownership_layer(&cid, &sender)? == OwnershipLayer::Owner,
-				<Error<T>>::NotIpfsOwner
-			);
+			// TODO: refactor the `create_ipfs_asset` for this to work.
+			// ensure!(
+			// 	Self::determine_account_ownership_layer(&cid, &sender)? == OwnershipLayer::Owner,
+			// 	<Error<T>>::NotIpfsOwner
+			// );
 
 			let multiaddr = OpaqueMultiaddr(addr);
 

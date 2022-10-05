@@ -36,7 +36,7 @@ impl<T: Config> Pallet<T> {
 
 	// Leaving this here as a reference. - @charmitro
 	pub fn ipfs_repo_stats() {
-		match ipfs::start_ipfs_request(IpfsRequest::RepoStats) {
+		match ipfs::ipfs_request(IpfsRequest::RepoStats) {
 			Ok(rsp) => {
 				match rsp {
 					IpfsResponse::RepoStats(peos) => log::info!("{:?}", peos),
@@ -70,350 +70,30 @@ impl<T: Config> Pallet<T> {
 	// 		})
 	// }
 
-	// pub fn handle_data_requests() -> Result<(), Error<T>> {
-	// 	let data_queue = DataQueue::<T>::get();
-	// 	let len = data_queue.len();
+	pub fn handle_data_requests() -> Result<(), Error<T>> {
+		let data_queue = DataQueue::<T>::get();
+		let len = data_queue.len();
 
-	// 	if len != 0 {
-	// 		log::info!("IPFS: {} entries in the data queue", len);
-	// 	}
+		if len != 0 {
+			log::info!("IPFS: {} entries in the data queue", len);
+		}
 
-	// 	let deadline = Some(timestamp().add(Duration::from_millis(5_000)));
-
-	// 	for cmd in data_queue.into_iter() {
-	// 		match cmd {
-	// 			DataCommand::AddBytes(m_addr, cid, size, admin, is_recursive) => {
-	// 				// this should work for different CID's. If you try to
-	// 				// connect and upload the same CID, you will get a duplicate
-	// 				// conn error. @charmitro
-	// 				match Self::ipfs_request(IpfsRequest::Connect(m_addr.clone()), deadline) {
-	// 					Ok(IpfsResponse::Success) =>
-	// 						match Self::ipfs_request(IpfsRequest::CatBytes(cid.clone()), deadline) {
-	// 							Ok(IpfsResponse::CatBytes(data)) => {
-	// 								log::info!("IPFS: fetched data");
-	// 								Self::ipfs_request(
-	// 									IpfsRequest::Disconnect(m_addr.clone()),
-	// 									deadline,
-	// 								)?;
-
-	// 								log::info!(
-	// 									"IPFS: disconnected from {}",
-	// 									sp_std::str::from_utf8(&m_addr.0).expect(
-	// 										"our own calls can be trusted to be UTF-8; qed"
-	// 									)
-	// 								);
-
-	// 								match Self::ipfs_request(
-	// 									IpfsRequest::AddBytes(data.clone()),
-	// 									deadline,
-	// 								) {
-	// 									Ok(IpfsResponse::AddBytes(new_cid)) => {
-	// 										log::info!(
-	// 											"IPFS: added data with CID: {}",
-	// 											sp_std::str::from_utf8(&new_cid).expect(
-	// 												"our own IPFS node can be trunsted here; qed"
-	// 											)
-	// 										);
-
-	// 										// signer is the probably the node account (often Alice)
-	// 										let signer =
-	// 											Signer::<T, T::AuthorityId>::all_accounts();
-	// 										if !signer.can_sign() {
-	// 											log::error!(
-	// 											"No local account available. Consider adding one via `author_insertKey` RPC.",
-	// 										);
-	// 										}
-
-	// 										let results =
-	// 											signer.send_signed_transaction(|_account| {
-	// 												Call::submit_ipfs_add_results {
-	// 													// admin should be the actual account that
-	// 													// we is doing the transcation in the first
-	// 													// place(create_ipfs_asset)
-	// 													admin: admin.clone(),
-	// 													cid: cid.clone(),
-	// 													size: size.clone(),
-	// 												}
-	// 											});
-
-	// 										for (_, res) in &results {
-	// 											match res {
-	// 												Ok(()) => {
-	// 													// also this probably doesn't work.
-	// 													log::info!("Submited IPFS results")
-	// 												},
-	// 												Err(e) => log::error!(
-	// 													"Failed to submit transaction: {:?}",
-	// 													e
-	// 												),
-	// 											}
-	// 										}
-
-	// 										match Self::ipfs_request(
-	// 											IpfsRequest::InsertPin(cid.clone(), is_recursive),
-	// 											deadline,
-	// 										) {
-	// 											Ok(IpfsResponse::Success) => {
-	// 												log::info!(
-	// 													"IPFS: pinned data with CID: {}",
-	// 													sp_std::str::from_utf8(&cid)
-	// 														.expect("trusted")
-	// 												)
-	// 											},
-	// 											Ok(_) => {
-	// 												unreachable!("only Success can be a response for that request type")
-	// 											},
-	// 											Err(e) => log::error!("IPFS: Pin Error: {:?}", e),
-	// 										}
-
-	// 										match Self::ipfs_request(
-	// 											IpfsRequest::Disconnect(m_addr.clone()),
-	// 											deadline,
-	// 										) {
-	// 											Ok(IpfsResponse::Success) => {
-	// 												log::info!("IPFS: Disconeccted Succes")
-	// 											},
-	// 											Ok(_) => {
-	// 												unreachable!("only Success can be a response for that request type")
-	// 											},
-	// 											Err(e) => {
-	// 												log::error!("IPFS: Disconnect Error: {:?}", e)
-	// 											},
-	// 										}
-	// 									},
-	// 									Ok(_) => unreachable!(
-	// 										"only AddBytes can be a response for that request type"
-	// 									),
-	// 									Err(e) => log::error!("IPFS: Add Error: {:?}", e),
-	// 								}
-	// 							},
-	// 							Ok(_) => unreachable!(
-	// 								"only AddBytes can be a response for that request type."
-	// 							),
-	// 							Err(e) => log::error!("IPFS: add error: {:?}", e),
-	// 						},
-	// 					Ok(_) =>
-	// 						unreachable!("only AddBytes can be a response for that request type."),
-	// 					Err(e) => log::error!("IPFS: add error: {:?}", e),
-	// 				}
-	// 			},
-	// 			DataCommand::AddBytesRaw(m_addr, data, admin, is_recursive) => {
-	// 				match Self::ipfs_request(IpfsRequest::Connect(m_addr.clone()), deadline) {
-	// 					Ok(IpfsResponse::Success) =>
-	// 						match Self::ipfs_request(IpfsRequest::AddBytes(data.clone()), deadline)
-	// 						{
-	// 							Ok(IpfsResponse::AddBytes(cid)) => {
-	// 								log::info!("IPFS: added data");
-	// 								Self::ipfs_request(
-	// 									IpfsRequest::Disconnect(m_addr.clone()),
-	// 									deadline,
-	// 								)?;
-
-	// 								// signer is the probably the node account (often Alice)
-	// 								let signer = Signer::<T, T::AuthorityId>::all_accounts();
-	// 								if !signer.can_sign() {
-	// 									log::error!(
-	// 											"No local account available. Consider adding one via `author_insertKey` RPC.",
-	// 										);
-	// 								}
-
-	// 								let results = signer.send_signed_transaction(|_account| {
-	// 									Call::submit_ipfs_add_results {
-	// 										// admin should be the actual account that we is doing
-	// 										// the transcation in the first place(create_ipfs_asset)
-	// 										admin: admin.clone(),
-	// 										cid: cid.clone(),
-	// 										size: data.len() as u64,
-	// 									}
-	// 								});
-
-	// 								for (_, res) in &results {
-	// 									match res {
-	// 										Ok(()) => {
-	// 											// also this probably doesn't work.
-	// 											log::info!("Submited IPFS results")
-	// 										},
-	// 										Err(e) => {
-	// 											log::error!("Failed to submit transaction: {:?}", e)
-	// 										},
-	// 									}
-	// 								}
-
-	// 								match Self::ipfs_request(
-	// 									IpfsRequest::InsertPin(cid.clone(), is_recursive),
-	// 									deadline,
-	// 								) {
-	// 									Ok(IpfsResponse::Success) => {
-	// 										log::info!(
-	// 											"IPFS: pinned data with CID: {}",
-	// 											sp_std::str::from_utf8(&cid).expect("trusted")
-	// 										)
-	// 									},
-	// 									Ok(_) => {
-	// 										unreachable!("only Success can be a response for that request type")
-	// 									},
-	// 									Err(e) => log::error!("IPFS: Pin Error: {:?}", e),
-	// 								}
-
-	// 								match Self::ipfs_request(
-	// 									IpfsRequest::Disconnect(m_addr.clone()),
-	// 									deadline,
-	// 								) {
-	// 									Ok(IpfsResponse::Success) => {
-	// 										log::info!("IPFS: Disconeccted Succes")
-	// 									},
-	// 									Ok(_) => {
-	// 										unreachable!("only Success can be a response for that request type")
-	// 									},
-	// 									Err(e) => {
-	// 										log::error!("IPFS: Disconnect Error: {:?}", e)
-	// 									},
-	// 								}
-	// 							},
-	// 							Ok(_) => unreachable!(
-	// 								"only AddBytes can be a response for that request type."
-	// 							),
-	// 							Err(e) => log::error!("IPFS: add error: {:?}", e),
-	// 						},
-	// 					Ok(_) =>
-	// 						unreachable!("only AddBytes can be a response for that request type."),
-	// 					Err(e) => log::error!("IPFS: add error: {:?}", e),
-	// 				}
-	// 			},
-
-	// 			DataCommand::CatBytes(m_addr, cid, _admin) => {
-	// 				match Self::ipfs_request(IpfsRequest::CatBytes(cid.clone()), deadline) {
-	// 					Ok(IpfsResponse::CatBytes(_data)) => {
-	// 						log::info!("IPFS: fetched data");
-	// 						Self::ipfs_request(IpfsRequest::Disconnect(m_addr.clone()), deadline)?;
-
-	// 						log::info!(
-	// 							"IPFS: disconnected from {}",
-	// 							sp_std::str::from_utf8(&m_addr.0)
-	// 								.expect("our own calls can be trusted to be UTF-8; qed")
-	// 						);
-	// 					},
-	// 					Ok(_) =>
-	// 						unreachable!("only AddBytes can be a response for that request type."),
-	// 					Err(e) => log::error!("IPFS: add error: {:?}", e),
-	// 				}
-	// 			},
-
-	// 			DataCommand::InsertPin(_m_addr, cid, _admin, is_recursive) =>
-	// 				match Self::ipfs_request(
-	// 					IpfsRequest::InsertPin(cid.clone(), is_recursive),
-	// 					deadline,
-	// 				) {
-	// 					Ok(IpfsResponse::Success) => {
-	// 						log::info!(
-	// 							"IPFS: pinned data with CID: {}",
-	// 							sp_std::str::from_utf8(&cid).expect("trusted")
-	// 						);
-
-	// 						let signer = Signer::<T, T::AuthorityId>::all_accounts();
-	// 						if !signer.can_sign() {
-	// 							log::error!(
-	// 								"No local account available. Consider adding one via `author_insertKey` RPC",
-	// 							);
-	// 						}
-
-	// 						let results = signer.send_signed_transaction(|_account| {
-	// 							Call::submit_ipfs_pin_results { cid: cid.clone() }
-	// 						});
-
-	// 						for (_, res) in &results {
-	// 							match res {
-	// 								Ok(()) => {
-	// 									log::info!("Submited IPFS results")
-	// 								},
-	// 								Err(e) => {
-	// 									log::error!("Failed to submit transaction: {:?}", e)
-	// 								},
-	// 							}
-	// 						}
-	// 					},
-	// 					Ok(_) => {
-	// 						unreachable!("only Success can be a response for that request type")
-	// 					},
-	// 					Err(e) => log::error!("IPFS: Pin Error: {:?}", e),
-	// 				},
-
-	// 			DataCommand::RemovePin(_m_addr, cid, _admin, is_recursive) =>
-	// 				match Self::ipfs_request(
-	// 					IpfsRequest::RemovePin(cid.clone(), is_recursive),
-	// 					deadline,
-	// 				) {
-	// 					Ok(IpfsResponse::Success) => {
-	// 						log::info!(
-	// 							"IPFS: unpinned data with CID: {:?}",
-	// 							sp_std::str::from_utf8(&cid).expect("qrff")
-	// 						);
-
-	// 						let signer = Signer::<T, T::AuthorityId>::all_accounts();
-	// 						if !signer.can_sign() {
-	// 							log::error!(
-	// 									"No local account available. Consider adding one via `author_insertKey` RPC",
-	// 								);
-	// 						}
-
-	// 						let results = signer.send_signed_transaction(|_account| {
-	// 							Call::submit_ipfs_unpin_results { cid: cid.clone() }
-	// 						});
-
-	// 						for (_, res) in &results {
-	// 							match res {
-	// 								Ok(()) => {
-	// 									log::info!("Submited IPFS results")
-	// 								},
-	// 								Err(e) => {
-	// 									log::error!("Failed to submit transaction: {:?}", e)
-	// 								},
-	// 							}
-	// 						}
-	// 					},
-	// 					Ok(_) => {
-	// 						unreachable!("only Success can be a response for that request type")
-	// 					},
-	// 					Err(e) => log::error!("IPFS: Remove Pin Error: {:?}", e),
-	// 				},
-
-	// 			DataCommand::RemoveBlock(_m_addr, cid, _admin) => {
-	// 				match Self::ipfs_request(IpfsRequest::RemoveBlock(cid.clone()), deadline) {
-	// 					Ok(IpfsResponse::RemoveBlock(cid)) => {
-	// 						log::info!(
-	// 							"IPFS: block deleted with CID: {}",
-	// 							sp_std::str::from_utf8(&cid).expect("qyzc")
-	// 						);
-
-	// 						let signer = Signer::<T, T::AuthorityId>::all_accounts();
-	// 						if !signer.can_sign() {
-	// 							log::error!(
-	// 									"No local account available. Consider adding one via `author_insertKey` RPC",
-	// 								);
-	// 						}
-
-	// 						let results = signer.send_signed_transaction(|_account| {
-	// 							Call::submit_ipfs_delete_results { cid: cid.clone() }
-	// 						});
-
-	// 						for (_, res) in &results {
-	// 							match res {
-	// 								Ok(()) => {
-	// 									log::info!("Submited IPFS results")
-	// 								},
-	// 								Err(e) => {
-	// 									log::error!("Failed to submit transaction: {:?}", e)
-	// 								},
-	// 							}
-	// 						}
-	// 					},
-	// 					Ok(_) =>
-	// 						unreachable!("only RemoveBlock can be a response for that request type"),
-	// 					Err(e) => log::error!("IPFS: Remove Block Error: {:?}", e),
-	// 				}
-	// 			},
-	// 		}
-	// 	}
-	// 	Ok(())
-	// }
+		for cmd in data_queue.into_iter() {
+			match cmd {
+				DataCommand::CatBytes(_m_address, cid, _account_id) => {
+					match ipfs::ipfs_request(IpfsRequest::Cat(cid)) {
+						Ok(rsp) => {
+							match rsp {
+								IpfsResponse::Cat(body) => log::info!("{:?}", body),
+								_ => {},
+							};
+						},
+						Err(_) => todo!(),
+					}
+				},
+				_ => {},
+			}
+		}
+		Ok(())
+	}
 }
