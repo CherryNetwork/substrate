@@ -2,7 +2,9 @@ use sp_core::offchain::Duration;
 use sp_io::offchain::timestamp;
 use sp_runtime::offchain::{
 	http,
-	ipfs::{self, CatResponse, IpfsRequest, IpfsResponse, PinResponse, UnPinResponse},
+	ipfs::{
+		self, BlockRMResponse, CatResponse, IpfsRequest, IpfsResponse, PinResponse, UnPinResponse,
+	},
 };
 
 use super::*;
@@ -63,6 +65,12 @@ impl<T: Config> Pallet<T> {
 						Ok(rsp) => log::info!("{:?}", rsp),
 						Err(err) => log::error!("{:?}", err),
 					},
+				DataCommand::RemoveBlock(_m_addr, cid, _account_id) => {
+					match ipfs::ipfs_request::<BlockRMResponse>(IpfsRequest::BlockRM(cid)) {
+						Ok(rsp) => log::info!("{:?}", rsp),
+						Err(err) => log::error!("{:?}", err),
+					}
+				},
 				_ => {},
 			}
 		}
