@@ -219,12 +219,11 @@ pub mod pallet {
 			0
 		}
 
-		fn offchain_worker(block_no: BlockNumberFor<T>) {
+		fn offchain_worker(_block_no: BlockNumberFor<T>) {
 			// 	// handle data requests each block
 			if let Err(e) = Self::handle_data_requests() {
 				log::error!("IPFS: Encountered an error while processing data requests: {:?}", e);
 			}
-			Self::ipfs_repo_stats();
 			// 	if block_no % 5u32.into() == 0u32.into() {
 			// 		if let Err(e) = Self::print_metadata() {
 			// 			log::error!("IPFS: Encountered an error while obtaining metadata: {:?}", e);

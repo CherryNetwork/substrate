@@ -36,9 +36,6 @@ impl<T: Config> Pallet<T> {
 		}
 	}
 
-	// Leaving this here as a reference. - @charmitro
-	pub fn ipfs_repo_stats() {}
-
 	pub fn handle_data_requests() -> Result<(), Error<T>> {
 		let data_queue = DataQueue::<T>::get();
 		let len = data_queue.len();
