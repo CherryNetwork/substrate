@@ -56,6 +56,8 @@ pub use weights::WeightInfo;
 
 #[derive(Encode, Decode, RuntimeDebug, PartialEq, TypeInfo)]
 pub enum DataCommand<AccountId> {
+	BootstrapAdd(OpaqueMultiaddr, AccountId),
+	BootstrapRM(OpaqueMultiaddr, AccountId),
 	AddBytes(OpaqueMultiaddr, Vec<u8>, u64, AccountId, bool),
 	AddBytesRaw(OpaqueMultiaddr, Vec<u8>, AccountId, bool),
 	CatBytes(OpaqueMultiaddr, Vec<u8>, AccountId),

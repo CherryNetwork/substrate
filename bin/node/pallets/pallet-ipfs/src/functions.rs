@@ -1,6 +1,6 @@
 use sp_runtime::offchain::{
 	ipfs::{ipfs_request, IpfsRequest},
-	ipfs_types::{BlockRMResponse, CatResponse, PinResponse, UnPinResponse},
+	ipfs_types::{BlockRMResponse, BootstrapAddResponse, CatResponse, PinResponse, UnPinResponse},
 };
 
 use super::*;
@@ -61,6 +61,14 @@ impl<T: Config> Pallet<T> {
 				DataCommand::RemoveBlock(_m_addr, cid, _account_id) => {
 					match ipfs_request::<BlockRMResponse>(IpfsRequest::BlockRM(cid)) {
 						Ok(rsp) => log::info!("{:?}", rsp),
+						Err(err) => log::error!("{:?}", err),
+					}
+				},
+				DataCommand::BootstrapAdd(m_address, _account_id) => {
+					match ipfs_request::<BootstrapAddResponse>(IpfsRequest::BootstrapAdd(
+						m_address.0,
+					)) {
+						Ok(resp) => log::info!("{:?}", resp),
 						Err(err) => log::error!("{:?}", err),
 					}
 				},
