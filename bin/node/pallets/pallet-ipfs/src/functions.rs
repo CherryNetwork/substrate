@@ -1,10 +1,6 @@
-use sp_core::offchain::Duration;
-use sp_io::offchain::timestamp;
 use sp_runtime::offchain::{
-	http,
-	ipfs::{
-		self, BlockRMResponse, CatResponse, IpfsRequest, IpfsResponse, PinResponse, UnPinResponse,
-	},
+	ipfs::{ipfs_request, IpfsRequest},
+	ipfs_types::{BlockRMResponse, CatResponse, PinResponse, UnPinResponse},
 };
 
 use super::*;
@@ -47,23 +43,23 @@ impl<T: Config> Pallet<T> {
 		for cmd in data_queue.into_iter() {
 			match cmd {
 				DataCommand::CatBytes(_m_address, cid, _account_id) => {
-					match ipfs::ipfs_request::<CatResponse>(IpfsRequest::Cat(cid)) {
+					match ipfs_request::<CatResponse>(IpfsRequest::Cat(cid)) {
 						Ok(rsp) => log::info!("{:?}", rsp),
 						Err(err) => log::error!("{:?}", err),
 					}
 				},
 				DataCommand::InsertPin(_m_address, cid, _account_id, _recursive) =>
-					match ipfs::ipfs_request::<PinResponse>(IpfsRequest::Cat(cid)) {
+					match ipfs_request::<PinResponse>(IpfsRequest::Cat(cid)) {
 						Ok(rsp) => log::info!("{:?}", rsp),
 						Err(err) => log::error!("{:?}", err),
 					},
 				DataCommand::RemovePin(_m_addr, cid, _account_id, _recursive) =>
-					match ipfs::ipfs_request::<UnPinResponse>(IpfsRequest::UnPin(cid)) {
+					match ipfs_request::<UnPinResponse>(IpfsRequest::UnPin(cid)) {
 						Ok(rsp) => log::info!("{:?}", rsp),
 						Err(err) => log::error!("{:?}", err),
 					},
 				DataCommand::RemoveBlock(_m_addr, cid, _account_id) => {
-					match ipfs::ipfs_request::<BlockRMResponse>(IpfsRequest::BlockRM(cid)) {
+					match ipfs_request::<BlockRMResponse>(IpfsRequest::BlockRM(cid)) {
 						Ok(rsp) => log::info!("{:?}", rsp),
 						Err(err) => log::error!("{:?}", err),
 					}
