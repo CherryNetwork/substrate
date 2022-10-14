@@ -5,6 +5,14 @@ use sp_core::offchain::{Duration, HttpError};
 use sp_io::offchain::timestamp;
 use sp_std::{borrow::ToOwned, vec::Vec};
 
+
+/// /api/v0/pin/rm response
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PeersResponse {
+	#[serde(alias = "Peers")]
+	peers: serde_json::Value,
+}
+
 /// /stats/bitswap response
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BitswapStatsResponse {
