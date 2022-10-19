@@ -1,10 +1,6 @@
-use crate::offchain::http;
 use serde::{Deserialize, Serialize};
 use serde_json;
-use sp_core::offchain::{Duration, HttpError};
-use sp_io::offchain::timestamp;
-use sp_std::{borrow::ToOwned, vec::Vec};
-
+use sp_std::vec::Vec;
 
 /// /api/v0/pin/rm response
 #[derive(Serialize, Deserialize, Debug)]
@@ -97,4 +93,13 @@ pub struct BootstrapAddResponse {
 pub struct BootstrapRMResponse {
 	#[serde(alias = "Peers")]
 	peers: serde_json::Value,
+}
+
+/// /api/v0/pin/rm response
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PeerIdConfigResponse {
+	#[serde(alias = "Key")]
+	key: Vec<u8>,
+	#[serde(alias = "Value")]
+	value: Vec<u8>,
 }

@@ -11,7 +11,7 @@ pub mod weights;
 
 use codec::{Decode, Encode};
 use frame_support::RuntimeDebug;
-use frame_system::{self};
+use frame_system;
 use scale_info::TypeInfo;
 use sp_core::{
 	crypto::KeyTypeId,

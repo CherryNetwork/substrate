@@ -22,10 +22,11 @@ use sp_std::{borrow::ToOwned, vec::Vec};
 
 use super::ipfs_types::{
 	BitswapStatsResponse, BlockRMResponse, BootstrapAddResponse, BootstrapRMResponse, CatResponse,
-	PinResponse, RepoStatsResponse, UnPinResponse,
+	PeerIdConfigResponse, PinResponse, RepoStatsResponse, UnPinResponse,
 };
 
 pub enum IpfsRequest {
+	PeerIdConfig,
 	Peers,
 	BitswapStats,
 	RepoStats,
@@ -38,6 +39,7 @@ pub enum IpfsRequest {
 }
 
 pub enum IpfsResponse {
+	PeerIdConfig(PeerIdConfigResponse),
 	Peers,
 	BitswapStats(BitswapStatsResponse),
 	RepoStats(RepoStatsResponse),
@@ -232,9 +234,29 @@ where
 
 			Ok(json_response)
 		},
+
 		IpfsRequest::Peers => {
 			let address: scale_info::prelude::string::String =
 				"http://127.0.0.1:5001/api/v0/swarm/peers".to_owned();
+
+			let request = http::Request::get(address.as_str()).method(http::Method::Post);
+			let pending = request.deadline(timeout).send()?;
+			let response =
+				pending.try_wait(timeout).map_err(|_| HttpError::DeadlineReached)?.unwrap();
+
+			let json_response: T = serde_json::from_str(
+				sp_std::str::from_utf8(&response.body().collect::<Vec<u8>>())
+					.map_err(|_| log::error!("Can't deser json response."))
+					.unwrap(),
+			)
+			.unwrap();
+
+			Ok(json_response)
+		},
+
+		IpfsRequest::PeerIdConfig => {
+			let address: scale_info::prelude::string::String =
+				"http://127.0.0.1:5001/api/v0/config?arg=Identity.PeerID".to_owned();
 
 			let request = http::Request::get(address.as_str()).method(http::Method::Post);
 			let pending = request.deadline(timeout).send()?;

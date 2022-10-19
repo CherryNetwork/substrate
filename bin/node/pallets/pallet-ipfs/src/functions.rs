@@ -4,6 +4,7 @@ use sp_runtime::offchain::{
 		BlockRMResponse, BootstrapAddResponse, CatResponse, PeersResponse, PinResponse,
 		UnPinResponse,
 	},
+	HttpError,
 };
 
 use super::*;
@@ -25,13 +26,12 @@ impl<T: Config> Pallet<T> {
 		acct: &T::AccountId,
 	) -> Result<OwnershipLayer, Error<T>> {
 		match Self::ipfs_asset(cid) {
-			Some(ipfs) => {
+			Some(ipfs) =>
 				if let Some(layer) = ipfs.owners.get_key_value(acct) {
 					Ok(layer.1.clone())
 				} else {
 					Err(<Error<T>>::AccNotExist)
-				}
-			},
+				},
 			None => Err(<Error<T>>::IpfsNotExist),
 		}
 	}
@@ -52,18 +52,16 @@ impl<T: Config> Pallet<T> {
 						Err(err) => log::error!("{:?}", err),
 					}
 				},
-				DataCommand::InsertPin(_m_address, cid, _account_id, _recursive) => {
+				DataCommand::InsertPin(_m_address, cid, _account_id, _recursive) =>
 					match ipfs_request::<PinResponse>(IpfsRequest::Cat(cid)) {
 						Ok(rsp) => log::info!("{:?}", rsp),
 						Err(err) => log::error!("{:?}", err),
-					}
-				},
-				DataCommand::RemovePin(_m_addr, cid, _account_id, _recursive) => {
+					},
+				DataCommand::RemovePin(_m_addr, cid, _account_id, _recursive) =>
 					match ipfs_request::<UnPinResponse>(IpfsRequest::UnPin(cid)) {
 						Ok(rsp) => log::info!("{:?}", rsp),
 						Err(err) => log::error!("{:?}", err),
-					}
-				},
+					},
 				DataCommand::RemoveBlock(_m_addr, cid, _account_id) => {
 					match ipfs_request::<BlockRMResponse>(IpfsRequest::BlockRM(cid)) {
 						Ok(rsp) => log::info!("{:?}", rsp),
@@ -84,15 +82,10 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	pub fn print_metadata() -> Result<(), Error<T>> {
+	pub fn print_metadata() -> Result<PeersResponse, HttpError> {
 		match ipfs_request::<PeersResponse>(IpfsRequest::Peers) {
-			Ok(resp) => log::info!(
-				"IPFS: currently connected to {:?} peers",
-				resp,
-			),
-			Err(err) => todo!(),
+			Ok(resp) => Ok(resp),
+			Err(err) => Err(err),
 		}
-
-		Ok(())
 	}
 }
