@@ -228,9 +228,11 @@ pub mod pallet {
 			}
 
 			if block_no % 5u32.into() == 0u32.into() {
-				if let Err(e) = Self::print_metadata() {
-					log::error!("IPFS: Encountered an error while obtaining metadata: {:?}", e);
-				}
+				match Self::print_metadata() {
+					// We are printing in debug here because logs are HUGE.
+					Ok(response) => log::debug!("🗃️  {:?}", response),
+					Err(err) => log::debug!("🗃️ ❌{:?}", err),
+				};
 			}
 		}
 	}

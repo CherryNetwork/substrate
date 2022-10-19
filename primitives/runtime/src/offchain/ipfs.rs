@@ -27,6 +27,7 @@ use super::ipfs_types::{
 
 pub enum IpfsRequest {
 	PeerIdConfig,
+	StorageConfig,
 	Peers,
 	BitswapStats,
 	RepoStats,
@@ -40,6 +41,7 @@ pub enum IpfsRequest {
 
 pub enum IpfsResponse {
 	PeerIdConfig(PeerIdConfigResponse),
+	StorageConfig,
 	Peers,
 	BitswapStats(BitswapStatsResponse),
 	RepoStats(RepoStatsResponse),
@@ -110,6 +112,10 @@ where
 			let response =
 				pending.try_wait(timeout).map_err(|_| HttpError::DeadlineReached)?.unwrap();
 
+			log::info!(
+				"{:?}",
+				sp_std::str::from_utf8(&response.body().collect::<Vec<u8>>()).unwrap()
+			);
 			let json_response: T = serde_json::from_str(
 				sp_std::str::from_utf8(&response.body().collect::<Vec<u8>>())
 					.map_err(|_| log::error!("Can't deser json response."))
@@ -257,6 +263,25 @@ where
 		IpfsRequest::PeerIdConfig => {
 			let address: scale_info::prelude::string::String =
 				"http://127.0.0.1:5001/api/v0/config?arg=Identity.PeerID".to_owned();
+
+			let request = http::Request::get(address.as_str()).method(http::Method::Post);
+			let pending = request.deadline(timeout).send()?;
+			let response =
+				pending.try_wait(timeout).map_err(|_| HttpError::DeadlineReached)?.unwrap();
+
+			let json_response: T = serde_json::from_str(
+				sp_std::str::from_utf8(&response.body().collect::<Vec<u8>>())
+					.map_err(|_| log::error!("Can't deser json response."))
+					.unwrap(),
+			)
+			.unwrap();
+
+			Ok(json_response)
+		},
+
+		IpfsRequest::StorageConfig => {
+			let address: scale_info::prelude::string::String =
+				"http://127.0.0.1:5001/api/v0/config?arg=Datastore.StorageMax".to_owned();
 
 			let request = http::Request::get(address.as_str()).method(http::Method::Post);
 			let pending = request.deadline(timeout).send()?;

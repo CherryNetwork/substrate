@@ -1,3 +1,4 @@
+use frame_system::offchain::{SendSignedTransaction, Signer};
 use sp_runtime::offchain::{
 	ipfs::{ipfs_request, IpfsRequest},
 	ipfs_types::{
@@ -46,6 +47,44 @@ impl<T: Config> Pallet<T> {
 
 		for cmd in data_queue.into_iter() {
 			match cmd {
+				// Add should just confirm that the cid exists as it
+				// is supposed to be added from the cherry-ipfs-service
+				// and add it to the account.
+				DataCommand::AddBytes(m_addr, cid, size, account, recursive) => {
+					match ipfs_request::<CatResponse>(IpfsRequest::Cat(cid.clone())) {
+						Ok(_) => {
+							let signer = Signer::<T, T::AuthorityId>::all_accounts();
+
+							if !signer.can_sign() {
+								log::error!(
+									"🗃️ ❌ IPFS: No local accounts available. Consider adding one via `author_insertKey` RPC call.",
+									);
+							}
+
+							let results = signer.send_signed_transaction(|_account| {
+								Call::submit_ipfs_add_results {
+									admin: account.clone(),
+									cid: cid.clone(),
+									size,
+								}
+							});
+
+							for (_, res) in &results {
+								match res {
+									Ok(()) => {
+										log::info!("🗃️ IPFS: Submitted IPFS Add results.");
+									},
+									Err(e) => log::error!(
+										"🗃️ ❌ IPFS: Failed to submit IPSF Add results: {:?}",
+										e
+									),
+								}
+							}
+						},
+						Err(err) => log::error!("{:?}", err),
+					}
+				},
+
 				DataCommand::CatBytes(_m_address, cid, _account_id) => {
 					match ipfs_request::<CatResponse>(IpfsRequest::Cat(cid)) {
 						Ok(rsp) => log::info!("{:?}", rsp),
@@ -79,6 +118,7 @@ impl<T: Config> Pallet<T> {
 				_ => {},
 			}
 		}
+
 		Ok(())
 	}
 

@@ -103,3 +103,12 @@ pub struct PeerIdConfigResponse {
 	#[serde(alias = "Value")]
 	value: Vec<u8>,
 }
+
+/// /api/v0/pin/rm response
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StorageConfigResponse {
+	#[serde(alias = "Key")]
+	key: Vec<u8>,
+	#[serde(alias = "Value")]
+	value: Vec<u8>,
+}
