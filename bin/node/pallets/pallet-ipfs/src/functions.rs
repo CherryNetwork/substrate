@@ -42,46 +42,39 @@ impl<T: Config> Pallet<T> {
 		let len = data_queue.len();
 
 		if len != 0 {
-			log::info!("IPFS: {} entries in the data queue", len);
+			log::info!("🗃️ ❌IPFS: {} entries in the data queue", len);
 		}
 
 		for cmd in data_queue.into_iter() {
 			match cmd {
-				// Add should just confirm that the cid exists as it
+				// TODO(@charmitro): Add should just confirm that the cid exists as it
 				// is supposed to be added from the cherry-ipfs-service
 				// and add it to the account.
 				DataCommand::AddBytes(m_addr, cid, size, account, recursive) => {
-					match ipfs_request::<CatResponse>(IpfsRequest::Cat(cid.clone())) {
-						Ok(_) => {
-							let signer = Signer::<T, T::AuthorityId>::all_accounts();
+					let signer = Signer::<T, T::AuthorityId>::all_accounts();
 
-							if !signer.can_sign() {
-								log::error!(
+					if !signer.can_sign() {
+						log::error!(
 									"🗃️ ❌ IPFS: No local accounts available. Consider adding one via `author_insertKey` RPC call.",
 									);
-							}
+					}
 
-							let results = signer.send_signed_transaction(|_account| {
-								Call::submit_ipfs_add_results {
-									admin: account.clone(),
-									cid: cid.clone(),
-									size,
-								}
-							});
+					let results =
+						signer.send_signed_transaction(|_account| Call::submit_ipfs_add_results {
+							admin: account.clone(),
+							cid: cid.clone(),
+							size,
+						});
 
-							for (_, res) in &results {
-								match res {
-									Ok(()) => {
-										log::info!("🗃️ IPFS: Submitted IPFS Add results.");
-									},
-									Err(e) => log::error!(
-										"🗃️ ❌ IPFS: Failed to submit IPSF Add results: {:?}",
-										e
-									),
-								}
-							}
-						},
-						Err(err) => log::error!("{:?}", err),
+					for (_, res) in &results {
+						match res {
+							Ok(()) => {
+								log::info!("🗃️ IPFS: Submitted IPFS Add results.");
+							},
+							Err(e) => {
+								log::error!("🗃️ ❌ IPFS: Failed to submit IPSF Add results: {:?}", e)
+							},
+						}
 					}
 				},
 
@@ -91,22 +84,74 @@ impl<T: Config> Pallet<T> {
 						Err(err) => log::error!("{:?}", err),
 					}
 				},
+
 				DataCommand::InsertPin(_m_address, cid, _account_id, _recursive) =>
-					match ipfs_request::<PinResponse>(IpfsRequest::Cat(cid)) {
-						Ok(rsp) => log::info!("{:?}", rsp),
+					match ipfs_request::<PinResponse>(IpfsRequest::Pin(cid.clone())) {
+						Ok(_rsp) => {
+							let signer = Signer::<T, T::AuthorityId>::all_accounts();
+
+							if !signer.can_sign() {
+								log::error!(
+									"🗃️ ❌ IPFS: No local accounts available. Consider adding one via `author_insertKey` RPC call.",
+									);
+							}
+
+							let results = signer.send_signed_transaction(|_account| {
+								Call::submit_ipfs_pin_results { cid: cid.clone() }
+							});
+
+							for (_, res) in &results {
+								match res {
+									Ok(()) => {
+										log::info!("🗃️ IPFS: Submitted IPFS Pin results.");
+									},
+									Err(e) => log::error!(
+										"🗃️ ❌ IPFS: Failed to submit IPSF Pin results: {:?}",
+										e
+									),
+								}
+							}
+						},
 						Err(err) => log::error!("{:?}", err),
 					},
+
 				DataCommand::RemovePin(_m_addr, cid, _account_id, _recursive) =>
-					match ipfs_request::<UnPinResponse>(IpfsRequest::UnPin(cid)) {
-						Ok(rsp) => log::info!("{:?}", rsp),
+					match ipfs_request::<UnPinResponse>(IpfsRequest::UnPin(cid.clone())) {
+						Ok(rsp) => {
+							let signer = Signer::<T, T::AuthorityId>::all_accounts();
+
+							if !signer.can_sign() {
+								log::error!(
+									"🗃️ ❌ IPFS: No local accounts available. Consider adding one via `author_insertKey` RPC call.",
+									);
+							}
+
+							let results = signer.send_signed_transaction(|_account| {
+								Call::submit_ipfs_unpin_results { cid: cid.clone() }
+							});
+
+							for (_, res) in &results {
+								match res {
+									Ok(()) => {
+										log::info!("🗃️ IPFS: Submitted IPFS Unpin results.");
+									},
+									Err(e) => log::error!(
+										"🗃️ ❌ IPFS: Failed to submit IPSF Unpin results: {:?}",
+										e
+									),
+								}
+							}
+						},
 						Err(err) => log::error!("{:?}", err),
 					},
+
 				DataCommand::RemoveBlock(_m_addr, cid, _account_id) => {
 					match ipfs_request::<BlockRMResponse>(IpfsRequest::BlockRM(cid)) {
 						Ok(rsp) => log::info!("{:?}", rsp),
 						Err(err) => log::error!("{:?}", err),
 					}
 				},
+
 				DataCommand::BootstrapAdd(m_address, _account_id) => {
 					match ipfs_request::<BootstrapAddResponse>(IpfsRequest::BootstrapAdd(
 						m_address.0,
@@ -115,6 +160,7 @@ impl<T: Config> Pallet<T> {
 						Err(err) => log::error!("{:?}", err),
 					}
 				},
+
 				_ => {},
 			}
 		}
