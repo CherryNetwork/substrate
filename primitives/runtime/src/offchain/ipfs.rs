@@ -151,7 +151,7 @@ where
 
 		IpfsRequest::UnPin(cid) => {
 			let mut address: scale_info::prelude::string::String =
-				"http://127.0.0.1:5001/api/v0/block/rm?arg=".to_owned();
+				"http://127.0.0.1:5001/api/v0/pin/rm?arg=".to_owned();
 			let url: scale_info::prelude::string::String =
 				scale_info::prelude::string::String::from_utf8(cid).unwrap();
 			address.push_str(&url.to_owned());
