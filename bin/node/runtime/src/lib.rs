@@ -1922,6 +1922,16 @@ impl_runtime_apis! {
 		}
 	}
 
+	impl pallet_ipfs_rpc_runtime_api::RpcIpfsApi<Block> for Runtime {
+		fn retrieve_bytes(
+			public_key: sp_core::Bytes,
+			signature:  sp_core::Bytes,
+			message: sp_core::Bytes,
+		) -> sp_core::Bytes {
+			Ipfs::retrieve_bytes(public_key, signature, message)
+		}
+	}
+
 	impl pallet_contracts_rpc_runtime_api::ContractsApi<
 		Block, AccountId, Balance, BlockNumber, Hash,
 	>
