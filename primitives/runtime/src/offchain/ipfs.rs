@@ -25,36 +25,61 @@ use super::ipfs_types::{
 	PeerIdConfigResponse, PinResponse, RepoStatsResponse, UnPinResponse,
 };
 
+/// Type of implemented IPFS Requests
 pub enum IpfsRequest {
+	/// Returns the selected PeerID IPFS Configuration
 	PeerIdConfig,
+	/// Returns the selected PeerID IPFS Storage Configuration
 	StorageConfig,
+	/// Returns all connected Peers
 	Peers,
+	/// Returns the selected PeerID IPFS Bitswap stats
 	BitswapStats,
+	/// Returns the selected PeerID IPFS Repo stats
 	RepoStats,
+	/// Cat an IPFS Object based on the CID
 	Cat(Vec<u8>),
+	/// Pin an IPFS Object based on the CID
 	Pin(Vec<u8>),
+	/// Unpin an IPFS Object based on the CID
 	UnPin(Vec<u8>),
+	/// Remove Block a.k.a. file
 	BlockRM(Vec<u8>),
+	/// Add bootstrap Peer to network
 	BootstrapAdd(Vec<u8>),
+	/// Remove bootstrap Peer from network
 	BootstrapRM(Vec<u8>),
 }
 
+/// Type of implemented IPFS Responses
 pub enum IpfsResponse {
+	/// Returns the selected PeerID IPFS Configuration
 	PeerIdConfig(PeerIdConfigResponse),
+	/// Returns the selected PeerID IPFS Storage Configuration
 	StorageConfig,
+	/// Returns all connected Peers
 	Peers,
+	/// Returns the selected PeerID IPFS Bitswap stats
 	BitswapStats(BitswapStatsResponse),
+	/// Returns the selected PeerID IPFS Repo stats
 	RepoStats(RepoStatsResponse),
+	/// Cat an IPFS Object based on the CID
 	Cat(CatResponse),
+	/// Pin an IPFS Object based on the CID
 	Pin(PinResponse),
+	/// Unpin an IPFS Object based on the CID
 	UnPin(UnPinResponse),
+	/// Remove Block a.k.a. file
 	BlockRM(BlockRMResponse),
+	/// Add bootstrap Peer to network
 	BootstrapAdd(BootstrapAddResponse),
+	/// Remove bootstrap Peer from network
 	BootstrapRM(BootstrapRMResponse),
 }
 
 // Using the return type as a Generic. We can't use the request parameter
 // as a generic due to the different URLs that we call. - @charmitro
+/// Performs an IPFS requests based on enums IpfsRequest
 pub fn ipfs_request<T>(request: IpfsRequest) -> Result<T, HttpError>
 where
 	T: for<'de> serde::Deserialize<'de>,
