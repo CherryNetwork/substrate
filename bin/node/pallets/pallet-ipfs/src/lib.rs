@@ -11,7 +11,7 @@ pub mod weights;
 
 use codec::{Decode, Encode};
 use frame_support::RuntimeDebug;
-use frame_system::{self};
+use frame_system;
 use scale_info::TypeInfo;
 use sp_core::{
 	crypto::KeyTypeId,
@@ -56,6 +56,8 @@ pub use weights::WeightInfo;
 
 #[derive(Encode, Decode, RuntimeDebug, PartialEq, TypeInfo)]
 pub enum DataCommand<AccountId> {
+	BootstrapAdd(OpaqueMultiaddr, AccountId),
+	BootstrapRM(OpaqueMultiaddr, AccountId),
 	AddBytes(OpaqueMultiaddr, Vec<u8>, u64, AccountId, bool),
 	AddBytesRaw(OpaqueMultiaddr, Vec<u8>, AccountId, bool),
 	CatBytes(OpaqueMultiaddr, Vec<u8>, AccountId),
@@ -219,18 +221,20 @@ pub mod pallet {
 			0
 		}
 
-		// fn offchain_worker(block_no: BlockNumberFor<T>) {
-		// 	// handle data requests each block
-		// 	if let Err(e) = Self::handle_data_requests() {
-		// 		log::error!("IPFS: Encountered an error while processing data requests: {:?}", e);
-		// 	}
+		fn offchain_worker(block_no: BlockNumberFor<T>) {
+			// 	// handle data requests each block
+			if let Err(e) = Self::handle_data_requests() {
+				log::error!("IPFS: Encountered an error while processing data requests: {:?}", e);
+			}
 
-		// 	if block_no % 5u32.into() == 0u32.into() {
-		// 		if let Err(e) = Self::print_metadata() {
-		// 			log::error!("IPFS: Encountered an error while obtaining metadata: {:?}", e);
-		// 		}
-		// 	}
-		// }
+			if block_no % 5u32.into() == 0u32.into() {
+				match Self::print_metadata() {
+					// We are printing in debug here because logs are HUGE.
+					Ok(response) => log::debug!("🗃️  {:?}", response),
+					Err(err) => log::debug!("🗃️ ❌{:?}", err),
+				};
+			}
+		}
 	}
 
 	#[pallet::call]
@@ -402,10 +406,11 @@ pub mod pallet {
 		pub fn read_file(origin: OriginFor<T>, addr: Vec<u8>, cid: Vec<u8>) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			ensure!(
-				Self::determine_account_ownership_layer(&cid, &sender)? == OwnershipLayer::Owner,
-				<Error<T>>::NotIpfsOwner
-			);
+			// TODO: refactor the `create_ipfs_asset` for this to work.
+			// ensure!(
+			// 	Self::determine_account_ownership_layer(&cid, &sender)? == OwnershipLayer::Owner,
+			// 	<Error<T>>::NotIpfsOwner
+			// );
 
 			let multiaddr = OpaqueMultiaddr(addr);
 

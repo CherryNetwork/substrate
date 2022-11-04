@@ -1068,6 +1068,19 @@ impl pallet_treasury::Config for Runtime {
 }
 
 parameter_types! {
+	pub const MaxIpfsOwned: u32 = 5;
+}
+
+impl pallet_ipfs::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type AuthorityId = pallet_ipfs::crypto::AuthorityId;
+	type Call = Call;
+	type MaxIpfsOwned = MaxIpfsOwned;
+	type WeightInfo = pallet_ipfs::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
 	pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
 	pub const BountyValueMinimum: Balance = 5 * DOLLARS;
 	pub const BountyDepositBase: Balance = 1 * DOLLARS;
@@ -1638,6 +1651,7 @@ construct_runtime!(
 		NominationPools: pallet_nomination_pools,
 		RankedPolls: pallet_referenda::<Instance2>,
 		RankedCollective: pallet_ranked_collective,
+		Ipfs: pallet_ipfs,
 	}
 );
 
@@ -1905,6 +1919,16 @@ impl_runtime_apis! {
 	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Index> for Runtime {
 		fn account_nonce(account: AccountId) -> Index {
 			System::account_nonce(account)
+		}
+	}
+
+	impl pallet_ipfs_rpc_runtime_api::RpcIpfsApi<Block> for Runtime {
+		fn retrieve_bytes(
+			public_key: sp_core::Bytes,
+			signature:  sp_core::Bytes,
+			message: sp_core::Bytes,
+		) -> sp_core::Bytes {
+			Ipfs::retrieve_bytes(public_key, signature, message)
 		}
 	}
 
