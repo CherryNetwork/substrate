@@ -73,20 +73,21 @@ mod mock;
 #[cfg(test)]
 mod tests;
 pub mod weights;
+pub mod migrations;
 
 #[frame_support::pallet]
 pub mod pallet {
 	pub use crate::weights::WeightInfo;
 	use frame_support::{
 		pallet_prelude::*,
-		traits::{Currency, DefensiveSaturating, OnUnbalanced, ReservableCurrency},
+		traits::{Currency, DefensiveSaturating, OnUnbalanced, ReservableCurrency, StorageVersion},
 	};
 	use frame_system::pallet_prelude::*;
 	use sp_arithmetic::{PerThing, Perquintill};
 	use sp_runtime::traits::{Saturating, Zero};
 	use sp_std::prelude::*;
 
-	type BalanceOf<T> =
+	pub type BalanceOf<T> =
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 	type PositiveImbalanceOf<T> = <<T as Config>::Currency as Currency<
 		<T as frame_system::Config>::AccountId,
@@ -94,6 +95,9 @@ pub mod pallet {
 	type NegativeImbalanceOf<T> = <<T as Config>::Currency as Currency<
 		<T as frame_system::Config>::AccountId,
 	>>::NegativeImbalance;
+
+	// The current storage version
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
@@ -179,6 +183,7 @@ pub mod pallet {
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
+	#[pallet::storage_version(STORAGE_VERSION)]
 	pub struct Pallet<T>(_);
 
 	/// A single bid on a gilt, an item of a *queue* in `Queues`.
@@ -337,6 +342,9 @@ pub mod pallet {
 			} else {
 				0
 			}
+		}
+		fn on_runtime_upgrade() -> frame_support::weights::Weight {
+			crate::migrations::v2::migrate::<T, Self>()
 		}
 	}
 
