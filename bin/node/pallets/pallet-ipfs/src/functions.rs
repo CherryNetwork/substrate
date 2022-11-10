@@ -50,7 +50,7 @@ impl<T: Config> Pallet<T> {
 				// TODO(@charmitro): Add should just confirm that the cid exists as it
 				// is supposed to be added from the cherry-ipfs-service
 				// and add it to the account.
-				DataCommand::AddBytes(m_addr, cid, size, account, recursive) => {
+				DataCommand::AddBytes(_m_addr, cid, size, account, recursive) => {
 					let signer = Signer::<T, T::AuthorityId>::all_accounts();
 
 					if !signer.can_sign() {
@@ -117,7 +117,7 @@ impl<T: Config> Pallet<T> {
 
 				DataCommand::RemovePin(_m_addr, cid, _account_id, _recursive) =>
 					match ipfs_request::<UnPinResponse>(IpfsRequest::UnPin(cid.clone())) {
-						Ok(rsp) => {
+						Ok(_) => {
 							let signer = Signer::<T, T::AuthorityId>::all_accounts();
 
 							if !signer.can_sign() {
@@ -172,6 +172,42 @@ impl<T: Config> Pallet<T> {
 		match ipfs_request::<PeersResponse>(IpfsRequest::Peers) {
 			Ok(resp) => Ok(resp),
 			Err(err) => Err(err),
+		}
+	}
+
+	pub fn ipfs_garbage_collection(current_block: T::BlockNumber) {
+		let mut cid_for_deletion: Vec<Ipfs<T>> = Vec::<Ipfs<T>>::new();
+
+		for i in <IpfsAsset<T>>::iter() {
+			if i.1.deleting_at <= current_block {
+				log::info!(
+					"IPFS Asset {:?} scheduled for deletion",
+					sp_std::str::from_utf8(&i.1.cid),
+				);
+				cid_for_deletion.push(i.1.clone());
+			}
+			log::info!("{:?}", i.1.cid);
+		}
+
+		let signer = Signer::<T, T::AuthorityId>::all_accounts();
+
+		if !signer.can_sign() {
+			log::error!(
+									"🗃️ ❌ IPFS: No local accounts available. Consider adding one via `author_insertKey` RPC call.",
+									);
+		}
+
+		let results = signer.send_signed_transaction(|_account| Call::submit_garbage_collection {
+			cid_for_deletion: cid_for_deletion.clone(),
+		});
+
+		for (_, res) in &results {
+			match res {
+				Ok(()) => {
+					log::info!("🗃️ IPFS: Submitted IPFS Unpin results.");
+				},
+				Err(e) => log::error!("🗃️ ❌ IPFS: Failed to submit IPSF Unpin results: {:?}", e),
+			}
 		}
 	}
 }
