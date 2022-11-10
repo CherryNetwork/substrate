@@ -83,7 +83,7 @@ pub mod pallet {
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 	///  Struct for holding IPFS information.
-	#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+	#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebugNoBound, TypeInfo)]
 	#[scale_info(skip_type_params(T))]
 	pub struct Ipfs<T: Config> {
 		pub cid: Vec<u8>,
@@ -190,7 +190,10 @@ pub mod pallet {
 		ReadIpfsAsset(T::AccountId, T::Hash),
 		DeleteIpfsAsset(T::AccountId, Vec<u8>),
 		AddPin(T::AccountId, Vec<u8>),
+		QueuedDataToPin(T::AccountId, Vec<u8>),
 		UnpinIpfsAsset(T::AccountId, Vec<u8>),
+
+		GarbageCollected(T::AccountId, Vec<Vec<u8>>),
 	}
 
 	// Storage items.
@@ -203,13 +206,18 @@ pub mod pallet {
 	/// Stores a IPFS's unique traits, owner and price.
 	#[pallet::storage]
 	#[pallet::getter(fn ipfs_asset)]
-	pub(super) type IpfsAsset<T: Config> = StorageMap<_, Twox64Concat, Vec<u8>, Ipfs<T>>;
+	pub(super) type IpfsAsset<T: Config> = StorageMap<_, Blake2_128Concat, Vec<u8>, Ipfs<T>>;
 
 	/// Keeps track of what accounts own what IPFS.
 	#[pallet::storage]
 	#[pallet::getter(fn ipfs_asset_owned)]
-	pub(super) type IpfsAssetOwned<T: Config> =
-		StorageMap<_, Twox64Concat, T::AccountId, BoundedVec<Vec<u8>, T::MaxIpfsOwned>, ValueQuery>;
+	pub(super) type IpfsAssetOwned<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		T::AccountId,
+		BoundedVec<Vec<u8>, T::MaxIpfsOwned>,
+		ValueQuery,
+	>;
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
@@ -233,6 +241,8 @@ pub mod pallet {
 					Ok(response) => log::debug!("🗃️  {:?}", response),
 					Err(err) => log::debug!("🗃️ ❌{:?}", err),
 				};
+
+				Self::ipfs_garbage_collection(block_no);
 			}
 		}
 	}
@@ -359,7 +369,7 @@ pub mod pallet {
 				queue.push(DataCommand::RemovePin(multiaddr, cid.clone(), sender.clone(), true))
 			});
 
-			Self::deposit_event(Event::UnpinIpfsAsset(sender.clone(), cid.clone()));
+			Self::deposit_event(Event::QueuedDataToPin(sender.clone(), cid.clone()));
 
 			Ok(())
 		}
@@ -489,7 +499,7 @@ pub mod pallet {
 
 		#[pallet::weight(0)]
 		pub fn submit_ipfs_unpin_results(origin: OriginFor<T>, cid: Vec<u8>) -> DispatchResult {
-			ensure_signed(origin)?;
+			let who = ensure_signed(origin)?;
 
 			let mut ipfs_asset = Self::ipfs_asset(&cid).ok_or(<Error<T>>::IpfsNotExist)?;
 
@@ -497,6 +507,8 @@ pub mod pallet {
 			<IpfsAsset<T>>::insert(cid.clone(), ipfs_asset);
 
 			<DataQueue<T>>::take();
+
+			Self::deposit_event(Event::UnpinIpfsAsset(who.clone(), cid.clone()));
 
 			Ok(())
 		}
@@ -524,6 +536,38 @@ pub mod pallet {
 
 			<IpfsAsset<T>>::remove(cid.clone());
 			<IpfsCnt<T>>::put(new_cnt);
+
+			Ok(())
+		}
+
+		/// Give ownership of an asset to user.
+		#[pallet::weight(0)]
+		pub fn submit_garbage_collection(
+			origin: OriginFor<T>,
+			cid_for_deletion: Vec<Ipfs<T>>,
+		) -> DispatchResult {
+			let signer = ensure_signed(origin)?;
+
+			let mut deleted_cids: Vec<Vec<u8>> = Vec::<Vec<u8>>::new();
+			for asset in cid_for_deletion.iter() {
+				<IpfsAsset<T>>::remove(asset.cid.clone());
+
+				for owner in asset.owners.iter() {
+					<IpfsAssetOwned<T>>::try_mutate(&owner.0, |ipfs_vec| {
+						if let Some(index) = ipfs_vec.iter().position(|i| *i == asset.cid.clone()) {
+							ipfs_vec.swap_remove(index);
+							Ok(true)
+						} else {
+							Ok(false)
+						}
+					})
+					.map_err(|_: bool| <Error<T>>::IpfsNotExist)?;
+				}
+
+				deleted_cids.push(asset.cid.clone());
+			}
+
+			Self::deposit_event(Event::GarbageCollected(signer, deleted_cids));
 
 			Ok(())
 		}
