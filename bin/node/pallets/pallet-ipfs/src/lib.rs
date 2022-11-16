@@ -58,7 +58,7 @@ pub use weights::WeightInfo;
 pub enum DataCommand<AccountId> {
 	BootstrapAdd(OpaqueMultiaddr, AccountId),
 	BootstrapRM(OpaqueMultiaddr, AccountId),
-	AddBytes(OpaqueMultiaddr, Vec<u8>, u64, AccountId, bool),
+	AddBytes(OpaqueMultiaddr, Vec<u8>, u32, AccountId, bool),
 	AddBytesRaw(OpaqueMultiaddr, Vec<u8>, AccountId, bool),
 	CatBytes(OpaqueMultiaddr, Vec<u8>, AccountId),
 	InsertPin(OpaqueMultiaddr, Vec<u8>, AccountId, bool),
@@ -87,7 +87,7 @@ pub mod pallet {
 	#[scale_info(skip_type_params(T))]
 	pub struct Ipfs<T: Config> {
 		pub cid: Vec<u8>,
-		pub size: u64,
+		pub size: u32,
 		pub gateway_url: Vec<u8>,
 		pub owners: BTreeMap<AccountOf<T>, OwnershipLayer>,
 		pub created_at: T::BlockNumber,
@@ -193,6 +193,7 @@ pub mod pallet {
 		QueuedDataToPin(T::AccountId, Vec<u8>),
 		UnpinIpfsAsset(T::AccountId, Vec<u8>),
 
+		AssetDurationExtended(T::AccountId, Vec<u8>),
 		GarbageCollected(T::AccountId, Vec<Vec<u8>>),
 	}
 
@@ -255,7 +256,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			addr: Vec<u8>,
 			cid: Vec<u8>,
-			size: u64,
+			size: u32,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
@@ -299,29 +300,31 @@ pub mod pallet {
 			Ok(())
 		}
 
-		// /// Extends the duration of an Ipfs asset
-		// #[pallet::weight(0)]
-		// pub fn extend_duration(
-		// 	origin: OriginFor<T>,
-		// 	ci_address: Vec<u8>,
-		// 	fee: BalanceOf<T>,
-		// ) -> DispatchResult {
-		// 	let sender = ensure_signed(origin)?;
+		/// Extends the duration of an Ipfs asset
+		#[pallet::weight(0)]
+		pub fn extend_duration(
+			origin: OriginFor<T>,
+			cid: Vec<u8>,
+			fee: BalanceOf<T>,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
 
-		// 	ensure!(
-		// 		Self::determine_account_ownership_layer(&ci_address, &sender)? == OwnershipLayer::Owner,
-		// 		<Error<T>>::NotIpfsOwner
-		// 	);
+			ensure!(
+				Self::determine_account_ownership_layer(&cid, &sender)? == OwnershipLayer::Owner,
+				<Error<T>>::NotIpfsOwner
+			);
 
-		// 	let x = TryInto::<u32>::try_into(fee).ok();
-		// 	let extra_duration = x.unwrap() / 16;  // 16 coins per 1 second
-		// 	// let old_duration = <IpfsAsset<T>>::get(&ci_address); //get deleting_at data of cid
-		// 	// let new_duration = old_duration + extra_duration.into();
+			let x = TryInto::<u32>::try_into(fee).ok();
+			let extra_duration = x.unwrap() / 16; // 16 coins per 1 second
+			let mut asset = <IpfsAsset<T>>::get(&cid).unwrap(); //get deleting_at data of cid
+			asset.deleting_at += extra_duration.into();
 
-		// 	// update the Ipfs struct with new deleting_at duration.
+			<IpfsAsset<T>>::insert(cid.clone(), asset);
 
-		// 	Ok(())
-		// }
+			Self::deposit_event(Event::AssetDurationExtended(sender.clone(), cid.clone()));
+
+			Ok(())
+		}
 
 		/// Pins an IPFS.
 		#[pallet::weight(0)]
@@ -451,7 +454,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			admin: AccountOf<T>,
 			cid: Vec<u8>,
-			size: u64,
+			size: u32,
 		) -> DispatchResult {
 			ensure_signed(origin)?;
 
@@ -467,7 +470,8 @@ pub mod pallet {
 				gateway_url,
 				owners: BTreeMap::<AccountOf<T>, OwnershipLayer>::new(),
 				created_at: current_block,
-				deleting_at: current_block,
+				deleting_at: current_block
+					* <T as frame_system::Config>::BlockNumber::from(size / 100 as u32),
 				pinned: true, // true by default.
 			};
 

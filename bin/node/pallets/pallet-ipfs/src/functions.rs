@@ -50,7 +50,7 @@ impl<T: Config> Pallet<T> {
 				// TODO(@charmitro): Add should just confirm that the cid exists as it
 				// is supposed to be added from the cherry-ipfs-service
 				// and add it to the account.
-				DataCommand::AddBytes(_m_addr, cid, size, account, recursive) => {
+				DataCommand::AddBytes(_m_addr, cid, size, account, _recursive) => {
 					let signer = Signer::<T, T::AuthorityId>::all_accounts();
 
 					if !signer.can_sign() {
