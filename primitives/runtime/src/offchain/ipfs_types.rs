@@ -1,3 +1,5 @@
+//! Types regarding ipfs requests & responses
+
 use serde::{Deserialize, Serialize};
 use serde_json;
 use sp_std::vec::Vec;
