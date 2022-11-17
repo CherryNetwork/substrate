@@ -121,7 +121,7 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: CreateSignedTransaction<Call<Self>> + frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// The Currency handler for the IPFS pallet.
 		type Currency: Currency<Self::AccountId>;
@@ -227,7 +227,7 @@ pub mod pallet {
 				<DataQueue<T>>::kill(); // Research this - @charmitro
 			}
 
-			0
+			Weight::zero()
 		}
 
 		fn offchain_worker(block_no: BlockNumberFor<T>) {
@@ -251,7 +251,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		/// Create a new unique IPFS.
-		#[pallet::weight(T::WeightInfo::create_ipfs_asset())]
+		#[pallet::weight(0)]
 		pub fn create_ipfs_asset(
 			origin: OriginFor<T>,
 			addr: Vec<u8>,
@@ -276,7 +276,7 @@ pub mod pallet {
 		}
 
 		/// Create a new unique IPFS.
-		#[pallet::weight(T::WeightInfo::create_ipfs_asset())]
+		#[pallet::weight(0)]
 		pub fn create_ipfs_asset_raw(
 			origin: OriginFor<T>,
 			addr: Vec<u8>,

@@ -45,26 +45,26 @@ use sp_std::marker::PhantomData;
 
 /// Weight functions needed for pallet_ipfs.
 pub trait WeightInfo {
-	fn create_ipfs_asset() -> Weight;
+	
 }
 
-/// Weights for pallet_ipfs using the Substrate node and recommended hardware.
-pub struct SubstrateWeight<T>(PhantomData<T>);
-impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
-	// Storage: Ipfs DataQueue (r:1 w:1)
-	fn create_ipfs_asset() -> Weight {
-		(12_238_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(1 as Weight))
-			.saturating_add(T::DbWeight::get().writes(1 as Weight))
-	}
-}
+// /// Weights for pallet_ipfs using the Substrate node and recommended hardware.
+// pub struct SubstrateWeight<T>(PhantomData<T>);
+// impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
+// 	// Storage: Ipfs DataQueue (r:1 w:1)
+// 	fn create_ipfs_asset() -> Weight {
+// 		(12_238_000 as Weight)
+// 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
+// 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
+// 	}
+// }
 
-// For backwards compatibility and tests
-impl WeightInfo for () {
-	// Storage: Ipfs DataQueue (r:1 w:1)
-	fn create_ipfs_asset() -> Weight {
-		(12_238_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
-	}
-}
+// // For backwards compatibility and tests
+// impl WeightInfo for () {
+// 	// Storage: Ipfs DataQueue (r:1 w:1)
+// 	fn create_ipfs_asset() -> Weight {
+// 		(12_238_000 as Weight)
+// 			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
+// 			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
+// 	}
+// }

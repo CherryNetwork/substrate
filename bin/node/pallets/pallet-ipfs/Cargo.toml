@@ -18,21 +18,21 @@ scale-info = { version = "2.1.1", default-features = false, features = ["derive"
 frame-support = { version = "4.0.0-dev", default-features = false, path = "../../../../frame/support" }
 frame-system = { version = "4.0.0-dev", default-features = false, path = "../../../../frame/system" }
 pallet-balances = { version = "4.0.0-dev", default-features = false, path = "../../../../frame/balances" }
-sp-runtime = { version = "6.0.0", default-features = false, path = "../../../../primitives/runtime" }
-sp-std = { version = "4.0.0", default-features = false, path = "../../../../primitives/std" }
-sp-io = { version = "6.0.0", default-features = false, path = "../../../../primitives/io" }
-sp-core = { default-features = false, version = "6.0.0", path = "../../../../primitives/core" }
+sp-runtime = { version = "7.0.0", default-features = false, path = "../../../../primitives/runtime" }
+sp-std = { version = "5.0.0", default-features = false, path = "../../../../primitives/std" }
+sp-io = { version = "7.0.0", default-features = false, path = "../../../../primitives/io" }
+sp-core = { default-features = false, version = "7.0.0", path = "../../../../primitives/core" }
 frame-benchmarking = { version = "4.0.0-dev", default-features = false, path = "../../../../frame/benchmarking", optional = true }
 log = { version = "0.4.17", default-features = false }
-sp-keystore = { version = "0.12.0", path = "../../../../primitives/keystore", optional = true }
+sp-keystore = { version = "0.13.0", path = "../../../../primitives/keystore", optional = true }
 pallet-assets = { version = "4.0.0-dev", default-features = false, path = "../../../../frame/assets" }
 serde = { version = "1.0.136", default-features = false }
-sp-application-crypto = { version = "6.0.0", path = "../../../../primitives/application-crypto", default-features = false }
+sp-application-crypto = { version = "7.0.0", path = "../../../../primitives/application-crypto", default-features = false }
 serde_bytes = { version = "0.11", default-features = false, features = [ "alloc"] }
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 
 [dev-dependencies]
-sp-core = { version = "6.0.0", path = "../../../../primitives/core" }
+sp-core = { version = "7.0.0", path = "../../../../primitives/core" }
 
 [features]
 default = ["std"]

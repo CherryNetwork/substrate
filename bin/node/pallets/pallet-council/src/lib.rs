@@ -189,13 +189,14 @@ pub mod pallet {
 		/// The outer call dispatch type.
 		type Proposal: Parameter
 			+ Dispatchable<
-				Origin = <Self as frame_system::Config>::Origin,
+				RuntimeOrigin = <Self as Config<I>>::Origin,
 				PostInfo = PostDispatchInfo,
 			> + From<frame_system::Call<Self>>
 			+ GetDispatchInfo;
 
 		/// The outer event type.
-		type Event: From<Event<Self, I>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self, I>>
+			+ IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// The time-out for council motions.
 		type MotionDuration: Get<Self::BlockNumber>;
@@ -444,13 +445,14 @@ pub mod pallet {
 		/// - DB: 1 read (codec `O(M)`) + DB access of `proposal`
 		/// - 1 event
 		/// # </weight>
-		#[pallet::weight((
-			<T as pallet::Config<I>>::WeightInfo::execute(
-				*length_bound, // B
-				T::MaxMembers::get(), // M
-			).saturating_add(proposal.get_dispatch_info().weight), // P
-			DispatchClass::Operational
-		))]
+		// #[pallet::weight((
+		// 	<T as pallet::Config<I>>::WeightInfo::execute(
+		// 		*length_bound, // B
+		// 		T::MaxMembers::get(), // M
+		// 	).saturating_add(proposal.get_dispatch_info().weight), // P
+		// 	DispatchClass::Operational
+		// ))]
+		#[pallet::weight(0)]
 		pub fn execute(
 			origin: OriginFor<T>,
 			proposal: Box<<T as Config<I>>::Proposal>,
@@ -637,7 +639,7 @@ pub mod pallet {
 					voting.ayes.push(who.clone());
 					voting.ayes_power.push((who.clone(), vote_power));
 				} else {
-					return Err(Error::<T, I>::DuplicateVote.into())
+					return Err(Error::<T, I>::DuplicateVote.into());
 				}
 				if let Some(pos) = position_no {
 					voting.nays.swap_remove(pos);
@@ -648,7 +650,7 @@ pub mod pallet {
 					voting.nays.push(who.clone());
 					voting.nays_power.push((who.clone(), vote_power));
 				} else {
-					return Err(Error::<T, I>::DuplicateVote.into())
+					return Err(Error::<T, I>::DuplicateVote.into());
 				}
 				if let Some(pos) = position_yes {
 					voting.ayes.swap_remove(pos);
@@ -784,7 +786,7 @@ pub mod pallet {
 					),
 					Pays::Yes,
 				)
-					.into())
+					.into());
 			} else if disapproved {
 				Self::deposit_event(Event::Closed(proposal_hash, yes_power, no_power));
 				let proposal_count = Self::do_disapprove_proposal(proposal_hash);
@@ -795,7 +797,7 @@ pub mod pallet {
 					)),
 					Pays::No,
 				)
-					.into())
+					.into());
 			}
 
 			// Only allow actual closing of the proposal after the voting period has ended.
@@ -993,7 +995,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 			max_gov_tokens += vote_power;
 		}
 
-		return max_gov_tokens
+		return max_gov_tokens;
 	}
 }
 

@@ -45,281 +45,281 @@ use sp_std::marker::PhantomData;
 
 /// Weight functions needed for pallet_collective.
 pub trait WeightInfo {
-	fn set_members(m: u32, n: u32, p: u32, ) -> Weight;
-	fn execute(b: u32, m: u32, ) -> Weight;
-	fn propose_execute(b: u32, m: u32, ) -> Weight;
-	fn propose_proposed(b: u32, m: u32, p: u32, ) -> Weight;
-	fn vote(m: u32, ) -> Weight;
-	fn close_early_disapproved(m: u32, p: u32, ) -> Weight;
-	fn close_early_approved(b: u32, m: u32, p: u32, ) -> Weight;
-	fn close_disapproved(m: u32, p: u32, ) -> Weight;
-	fn close_approved(b: u32, m: u32, p: u32, ) -> Weight;
-	fn disapprove_proposal(p: u32, ) -> Weight;
+	// fn set_members(m: u32, n: u32, p: u32, ) -> Weight;
+	// fn execute(b: u32, m: u32, ) -> Weight;
+	// fn propose_execute(b: u32, m: u32, ) -> Weight;
+	// fn propose_proposed(b: u32, m: u32, p: u32, ) -> Weight;
+	// fn vote(m: u32, ) -> Weight;
+	// fn close_early_disapproved(m: u32, p: u32, ) -> Weight;
+	// fn close_early_approved(b: u32, m: u32, p: u32, ) -> Weight;
+	// fn close_disapproved(m: u32, p: u32, ) -> Weight;
+	// fn close_approved(b: u32, m: u32, p: u32, ) -> Weight;
+	// fn disapprove_proposal(p: u32, ) -> Weight;
 }
 
-/// Weights for pallet_collective using the Substrate node and recommended hardware.
-pub struct SubstrateWeight<T>(PhantomData<T>);
-impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
-	// Storage: Instance1Collective Members (r:1 w:1)
-	// Storage: Instance1Collective Proposals (r:1 w:0)
-	// Storage: Instance1Collective Voting (r:100 w:100)
-	// Storage: Instance1Collective Prime (r:0 w:1)
-	fn set_members(m: u32, n: u32, p: u32, ) -> Weight {
-		(0 as Weight)
-			// Standard Error: 4_000
-			.saturating_add((14_084_000 as Weight).saturating_mul(m as Weight))
-			// Standard Error: 4_000
-			.saturating_add((161_000 as Weight).saturating_mul(n as Weight))
-			// Standard Error: 4_000
-			.saturating_add((19_201_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(T::DbWeight::get().reads(2 as Weight))
-			.saturating_add(T::DbWeight::get().reads((1 as Weight).saturating_mul(p as Weight)))
-			.saturating_add(T::DbWeight::get().writes(2 as Weight))
-			.saturating_add(T::DbWeight::get().writes((1 as Weight).saturating_mul(p as Weight)))
-	}
-	// Storage: Instance1Collective Members (r:1 w:0)
-	fn execute(b: u32, m: u32, ) -> Weight {
-		(22_748_000 as Weight)
-			// Standard Error: 0
-			.saturating_add((3_000 as Weight).saturating_mul(b as Weight))
-			// Standard Error: 0
-			.saturating_add((92_000 as Weight).saturating_mul(m as Weight))
-			.saturating_add(T::DbWeight::get().reads(1 as Weight))
-	}
-	// Storage: Instance1Collective Members (r:1 w:0)
-	// Storage: Instance1Collective ProposalOf (r:1 w:0)
-	fn propose_execute(b: u32, m: u32, ) -> Weight {
-		(27_465_000 as Weight)
-			// Standard Error: 0
-			.saturating_add((3_000 as Weight).saturating_mul(b as Weight))
-			// Standard Error: 0
-			.saturating_add((178_000 as Weight).saturating_mul(m as Weight))
-			.saturating_add(T::DbWeight::get().reads(2 as Weight))
-	}
-	// Storage: Instance1Collective Members (r:1 w:0)
-	// Storage: Instance1Collective ProposalOf (r:1 w:1)
-	// Storage: Instance1Collective Proposals (r:1 w:1)
-	// Storage: Instance1Collective ProposalCount (r:1 w:1)
-	// Storage: Instance1Collective Voting (r:0 w:1)
-	fn propose_proposed(b: u32, m: u32, p: u32, ) -> Weight {
-		(39_869_000 as Weight)
-			// Standard Error: 0
-			.saturating_add((8_000 as Weight).saturating_mul(b as Weight))
-			// Standard Error: 1_000
-			.saturating_add((107_000 as Weight).saturating_mul(m as Weight))
-			// Standard Error: 1_000
-			.saturating_add((406_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(T::DbWeight::get().reads(4 as Weight))
-			.saturating_add(T::DbWeight::get().writes(4 as Weight))
-	}
-	// Storage: Instance1Collective Members (r:1 w:0)
-	// Storage: Instance1Collective Voting (r:1 w:1)
-	fn vote(m: u32, ) -> Weight {
-		(37_387_000 as Weight)
-			// Standard Error: 2_000
-			.saturating_add((223_000 as Weight).saturating_mul(m as Weight))
-			.saturating_add(T::DbWeight::get().reads(2 as Weight))
-			.saturating_add(T::DbWeight::get().writes(1 as Weight))
-	}
-	// Storage: Instance1Collective Voting (r:1 w:1)
-	// Storage: Instance1Collective Members (r:1 w:0)
-	// Storage: Instance1Collective Proposals (r:1 w:1)
-	// Storage: Instance1Collective ProposalOf (r:0 w:1)
-	fn close_early_disapproved(m: u32, p: u32, ) -> Weight {
-		(45_670_000 as Weight)
-			// Standard Error: 1_000
-			.saturating_add((170_000 as Weight).saturating_mul(m as Weight))
-			// Standard Error: 1_000
-			.saturating_add((358_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(T::DbWeight::get().reads(3 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
-	}
-	// Storage: Instance1Collective Voting (r:1 w:1)
-	// Storage: Instance1Collective Members (r:1 w:0)
-	// Storage: Instance1Collective ProposalOf (r:1 w:1)
-	// Storage: Instance1Collective Proposals (r:1 w:1)
-	fn close_early_approved(b: u32, m: u32, p: u32, ) -> Weight {
-		(52_529_000 as Weight)
-			// Standard Error: 0
-			.saturating_add((7_000 as Weight).saturating_mul(b as Weight))
-			// Standard Error: 1_000
-			.saturating_add((206_000 as Weight).saturating_mul(m as Weight))
-			// Standard Error: 1_000
-			.saturating_add((412_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(T::DbWeight::get().reads(4 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
-	}
-	// Storage: Instance1Collective Voting (r:1 w:1)
-	// Storage: Instance1Collective Members (r:1 w:0)
-	// Storage: Instance1Collective Prime (r:1 w:0)
-	// Storage: Instance1Collective Proposals (r:1 w:1)
-	// Storage: Instance1Collective ProposalOf (r:0 w:1)
-	fn close_disapproved(m: u32, p: u32, ) -> Weight {
-		(50_427_000 as Weight)
-			// Standard Error: 1_000
-			.saturating_add((170_000 as Weight).saturating_mul(m as Weight))
-			// Standard Error: 1_000
-			.saturating_add((354_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(T::DbWeight::get().reads(4 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
-	}
-	// Storage: Instance1Collective Voting (r:1 w:1)
-	// Storage: Instance1Collective Members (r:1 w:0)
-	// Storage: Instance1Collective Prime (r:1 w:0)
-	// Storage: Instance1Collective ProposalOf (r:1 w:1)
-	// Storage: Instance1Collective Proposals (r:1 w:1)
-	fn close_approved(b: u32, m: u32, p: u32, ) -> Weight {
-		(57_031_000 as Weight)
-			// Standard Error: 0
-			.saturating_add((7_000 as Weight).saturating_mul(b as Weight))
-			// Standard Error: 1_000
-			.saturating_add((208_000 as Weight).saturating_mul(m as Weight))
-			// Standard Error: 1_000
-			.saturating_add((408_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(T::DbWeight::get().reads(5 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
-	}
-	// Storage: Instance1Collective Proposals (r:1 w:1)
-	// Storage: Instance1Collective Voting (r:0 w:1)
-	// Storage: Instance1Collective ProposalOf (r:0 w:1)
-	fn disapprove_proposal(p: u32, ) -> Weight {
-		(27_458_000 as Weight)
-			// Standard Error: 1_000
-			.saturating_add((402_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(T::DbWeight::get().reads(1 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
-	}
-}
+// /// Weights for pallet_collective using the Substrate node and recommended hardware.
+// pub struct SubstrateWeight<T>(PhantomData<T>);
+// impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
+// 	// Storage: Instance1Collective Members (r:1 w:1)
+// 	// Storage: Instance1Collective Proposals (r:1 w:0)
+// 	// Storage: Instance1Collective Voting (r:100 w:100)
+// 	// Storage: Instance1Collective Prime (r:0 w:1)
+// 	fn set_members(m: u32, n: u32, p: u32, ) -> Weight {
+// 		(0 as Weight)
+// 			// Standard Error: 4_000
+// 			.saturating_add((14_084_000 as Weight).saturating_mul(m as Weight))
+// 			// Standard Error: 4_000
+// 			.saturating_add((161_000 as Weight).saturating_mul(n as Weight))
+// 			// Standard Error: 4_000
+// 			.saturating_add((19_201_000 as Weight).saturating_mul(p as Weight))
+// 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
+// 			.saturating_add(T::DbWeight::get().reads((1 as Weight).saturating_mul(p as Weight)))
+// 			.saturating_add(T::DbWeight::get().writes(2 as Weight))
+// 			.saturating_add(T::DbWeight::get().writes((1 as Weight).saturating_mul(p as Weight)))
+// 	}
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	fn execute(b: u32, m: u32, ) -> Weight {
+// 		(22_748_000 as Weight)
+// 			// Standard Error: 0
+// 			.saturating_add((3_000 as Weight).saturating_mul(b as Weight))
+// 			// Standard Error: 0
+// 			.saturating_add((92_000 as Weight).saturating_mul(m as Weight))
+// 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	// Storage: Instance1Collective ProposalOf (r:1 w:0)
+// 	fn propose_execute(b: u32, m: u32, ) -> Weight {
+// 		(27_465_000 as Weight)
+// 			// Standard Error: 0
+// 			.saturating_add((3_000 as Weight).saturating_mul(b as Weight))
+// 			// Standard Error: 0
+// 			.saturating_add((178_000 as Weight).saturating_mul(m as Weight))
+// 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	// Storage: Instance1Collective ProposalOf (r:1 w:1)
+// 	// Storage: Instance1Collective Proposals (r:1 w:1)
+// 	// Storage: Instance1Collective ProposalCount (r:1 w:1)
+// 	// Storage: Instance1Collective Voting (r:0 w:1)
+// 	fn propose_proposed(b: u32, m: u32, p: u32, ) -> Weight {
+// 		(39_869_000 as Weight)
+// 			// Standard Error: 0
+// 			.saturating_add((8_000 as Weight).saturating_mul(b as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((107_000 as Weight).saturating_mul(m as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((406_000 as Weight).saturating_mul(p as Weight))
+// 			.saturating_add(T::DbWeight::get().reads(4 as Weight))
+// 			.saturating_add(T::DbWeight::get().writes(4 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	// Storage: Instance1Collective Voting (r:1 w:1)
+// 	fn vote(m: u32, ) -> Weight {
+// 		(37_387_000 as Weight)
+// 			// Standard Error: 2_000
+// 			.saturating_add((223_000 as Weight).saturating_mul(m as Weight))
+// 			.saturating_add(T::DbWeight::get().reads(2 as Weight))
+// 			.saturating_add(T::DbWeight::get().writes(1 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Voting (r:1 w:1)
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	// Storage: Instance1Collective Proposals (r:1 w:1)
+// 	// Storage: Instance1Collective ProposalOf (r:0 w:1)
+// 	fn close_early_disapproved(m: u32, p: u32, ) -> Weight {
+// 		(45_670_000 as Weight)
+// 			// Standard Error: 1_000
+// 			.saturating_add((170_000 as Weight).saturating_mul(m as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((358_000 as Weight).saturating_mul(p as Weight))
+// 			.saturating_add(T::DbWeight::get().reads(3 as Weight))
+// 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Voting (r:1 w:1)
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	// Storage: Instance1Collective ProposalOf (r:1 w:1)
+// 	// Storage: Instance1Collective Proposals (r:1 w:1)
+// 	fn close_early_approved(b: u32, m: u32, p: u32, ) -> Weight {
+// 		(52_529_000 as Weight)
+// 			// Standard Error: 0
+// 			.saturating_add((7_000 as Weight).saturating_mul(b as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((206_000 as Weight).saturating_mul(m as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((412_000 as Weight).saturating_mul(p as Weight))
+// 			.saturating_add(T::DbWeight::get().reads(4 as Weight))
+// 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Voting (r:1 w:1)
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	// Storage: Instance1Collective Prime (r:1 w:0)
+// 	// Storage: Instance1Collective Proposals (r:1 w:1)
+// 	// Storage: Instance1Collective ProposalOf (r:0 w:1)
+// 	fn close_disapproved(m: u32, p: u32, ) -> Weight {
+// 		(50_427_000 as Weight)
+// 			// Standard Error: 1_000
+// 			.saturating_add((170_000 as Weight).saturating_mul(m as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((354_000 as Weight).saturating_mul(p as Weight))
+// 			.saturating_add(T::DbWeight::get().reads(4 as Weight))
+// 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Voting (r:1 w:1)
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	// Storage: Instance1Collective Prime (r:1 w:0)
+// 	// Storage: Instance1Collective ProposalOf (r:1 w:1)
+// 	// Storage: Instance1Collective Proposals (r:1 w:1)
+// 	fn close_approved(b: u32, m: u32, p: u32, ) -> Weight {
+// 		(57_031_000 as Weight)
+// 			// Standard Error: 0
+// 			.saturating_add((7_000 as Weight).saturating_mul(b as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((208_000 as Weight).saturating_mul(m as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((408_000 as Weight).saturating_mul(p as Weight))
+// 			.saturating_add(T::DbWeight::get().reads(5 as Weight))
+// 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Proposals (r:1 w:1)
+// 	// Storage: Instance1Collective Voting (r:0 w:1)
+// 	// Storage: Instance1Collective ProposalOf (r:0 w:1)
+// 	fn disapprove_proposal(p: u32, ) -> Weight {
+// 		(27_458_000 as Weight)
+// 			// Standard Error: 1_000
+// 			.saturating_add((402_000 as Weight).saturating_mul(p as Weight))
+// 			.saturating_add(T::DbWeight::get().reads(1 as Weight))
+// 			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+// 	}
+// }
 
-// For backwards compatibility and tests
-impl WeightInfo for () {
-	// Storage: Instance1Collective Members (r:1 w:1)
-	// Storage: Instance1Collective Proposals (r:1 w:0)
-	// Storage: Instance1Collective Voting (r:100 w:100)
-	// Storage: Instance1Collective Prime (r:0 w:1)
-	fn set_members(m: u32, n: u32, p: u32, ) -> Weight {
-		(0 as Weight)
-			// Standard Error: 4_000
-			.saturating_add((14_084_000 as Weight).saturating_mul(m as Weight))
-			// Standard Error: 4_000
-			.saturating_add((161_000 as Weight).saturating_mul(n as Weight))
-			// Standard Error: 4_000
-			.saturating_add((19_201_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
-			.saturating_add(RocksDbWeight::get().reads((1 as Weight).saturating_mul(p as Weight)))
-			.saturating_add(RocksDbWeight::get().writes(2 as Weight))
-			.saturating_add(RocksDbWeight::get().writes((1 as Weight).saturating_mul(p as Weight)))
-	}
-	// Storage: Instance1Collective Members (r:1 w:0)
-	fn execute(b: u32, m: u32, ) -> Weight {
-		(22_748_000 as Weight)
-			// Standard Error: 0
-			.saturating_add((3_000 as Weight).saturating_mul(b as Weight))
-			// Standard Error: 0
-			.saturating_add((92_000 as Weight).saturating_mul(m as Weight))
-			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
-	}
-	// Storage: Instance1Collective Members (r:1 w:0)
-	// Storage: Instance1Collective ProposalOf (r:1 w:0)
-	fn propose_execute(b: u32, m: u32, ) -> Weight {
-		(27_465_000 as Weight)
-			// Standard Error: 0
-			.saturating_add((3_000 as Weight).saturating_mul(b as Weight))
-			// Standard Error: 0
-			.saturating_add((178_000 as Weight).saturating_mul(m as Weight))
-			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
-	}
-	// Storage: Instance1Collective Members (r:1 w:0)
-	// Storage: Instance1Collective ProposalOf (r:1 w:1)
-	// Storage: Instance1Collective Proposals (r:1 w:1)
-	// Storage: Instance1Collective ProposalCount (r:1 w:1)
-	// Storage: Instance1Collective Voting (r:0 w:1)
-	fn propose_proposed(b: u32, m: u32, p: u32, ) -> Weight {
-		(39_869_000 as Weight)
-			// Standard Error: 0
-			.saturating_add((8_000 as Weight).saturating_mul(b as Weight))
-			// Standard Error: 1_000
-			.saturating_add((107_000 as Weight).saturating_mul(m as Weight))
-			// Standard Error: 1_000
-			.saturating_add((406_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(4 as Weight))
-	}
-	// Storage: Instance1Collective Members (r:1 w:0)
-	// Storage: Instance1Collective Voting (r:1 w:1)
-	fn vote(m: u32, ) -> Weight {
-		(37_387_000 as Weight)
-			// Standard Error: 2_000
-			.saturating_add((223_000 as Weight).saturating_mul(m as Weight))
-			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
-	}
-	// Storage: Instance1Collective Voting (r:1 w:1)
-	// Storage: Instance1Collective Members (r:1 w:0)
-	// Storage: Instance1Collective Proposals (r:1 w:1)
-	// Storage: Instance1Collective ProposalOf (r:0 w:1)
-	fn close_early_disapproved(m: u32, p: u32, ) -> Weight {
-		(45_670_000 as Weight)
-			// Standard Error: 1_000
-			.saturating_add((170_000 as Weight).saturating_mul(m as Weight))
-			// Standard Error: 1_000
-			.saturating_add((358_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
-	}
-	// Storage: Instance1Collective Voting (r:1 w:1)
-	// Storage: Instance1Collective Members (r:1 w:0)
-	// Storage: Instance1Collective ProposalOf (r:1 w:1)
-	// Storage: Instance1Collective Proposals (r:1 w:1)
-	fn close_early_approved(b: u32, m: u32, p: u32, ) -> Weight {
-		(52_529_000 as Weight)
-			// Standard Error: 0
-			.saturating_add((7_000 as Weight).saturating_mul(b as Weight))
-			// Standard Error: 1_000
-			.saturating_add((206_000 as Weight).saturating_mul(m as Weight))
-			// Standard Error: 1_000
-			.saturating_add((412_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
-	}
-	// Storage: Instance1Collective Voting (r:1 w:1)
-	// Storage: Instance1Collective Members (r:1 w:0)
-	// Storage: Instance1Collective Prime (r:1 w:0)
-	// Storage: Instance1Collective Proposals (r:1 w:1)
-	// Storage: Instance1Collective ProposalOf (r:0 w:1)
-	fn close_disapproved(m: u32, p: u32, ) -> Weight {
-		(50_427_000 as Weight)
-			// Standard Error: 1_000
-			.saturating_add((170_000 as Weight).saturating_mul(m as Weight))
-			// Standard Error: 1_000
-			.saturating_add((354_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
-	}
-	// Storage: Instance1Collective Voting (r:1 w:1)
-	// Storage: Instance1Collective Members (r:1 w:0)
-	// Storage: Instance1Collective Prime (r:1 w:0)
-	// Storage: Instance1Collective ProposalOf (r:1 w:1)
-	// Storage: Instance1Collective Proposals (r:1 w:1)
-	fn close_approved(b: u32, m: u32, p: u32, ) -> Weight {
-		(57_031_000 as Weight)
-			// Standard Error: 0
-			.saturating_add((7_000 as Weight).saturating_mul(b as Weight))
-			// Standard Error: 1_000
-			.saturating_add((208_000 as Weight).saturating_mul(m as Weight))
-			// Standard Error: 1_000
-			.saturating_add((408_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(RocksDbWeight::get().reads(5 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
-	}
-	// Storage: Instance1Collective Proposals (r:1 w:1)
-	// Storage: Instance1Collective Voting (r:0 w:1)
-	// Storage: Instance1Collective ProposalOf (r:0 w:1)
-	fn disapprove_proposal(p: u32, ) -> Weight {
-		(27_458_000 as Weight)
-			// Standard Error: 1_000
-			.saturating_add((402_000 as Weight).saturating_mul(p as Weight))
-			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
-	}
-}
+// // For backwards compatibility and tests
+// impl WeightInfo for () {
+// 	// Storage: Instance1Collective Members (r:1 w:1)
+// 	// Storage: Instance1Collective Proposals (r:1 w:0)
+// 	// Storage: Instance1Collective Voting (r:100 w:100)
+// 	// Storage: Instance1Collective Prime (r:0 w:1)
+// 	fn set_members(m: u32, n: u32, p: u32, ) -> Weight {
+// 		(0 as Weight)
+// 			// Standard Error: 4_000
+// 			.saturating_add((14_084_000 as Weight).saturating_mul(m as Weight))
+// 			// Standard Error: 4_000
+// 			.saturating_add((161_000 as Weight).saturating_mul(n as Weight))
+// 			// Standard Error: 4_000
+// 			.saturating_add((19_201_000 as Weight).saturating_mul(p as Weight))
+// 			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
+// 			.saturating_add(RocksDbWeight::get().reads((1 as Weight).saturating_mul(p as Weight)))
+// 			.saturating_add(RocksDbWeight::get().writes(2 as Weight))
+// 			.saturating_add(RocksDbWeight::get().writes((1 as Weight).saturating_mul(p as Weight)))
+// 	}
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	fn execute(b: u32, m: u32, ) -> Weight {
+// 		(22_748_000 as Weight)
+// 			// Standard Error: 0
+// 			.saturating_add((3_000 as Weight).saturating_mul(b as Weight))
+// 			// Standard Error: 0
+// 			.saturating_add((92_000 as Weight).saturating_mul(m as Weight))
+// 			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	// Storage: Instance1Collective ProposalOf (r:1 w:0)
+// 	fn propose_execute(b: u32, m: u32, ) -> Weight {
+// 		(27_465_000 as Weight)
+// 			// Standard Error: 0
+// 			.saturating_add((3_000 as Weight).saturating_mul(b as Weight))
+// 			// Standard Error: 0
+// 			.saturating_add((178_000 as Weight).saturating_mul(m as Weight))
+// 			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	// Storage: Instance1Collective ProposalOf (r:1 w:1)
+// 	// Storage: Instance1Collective Proposals (r:1 w:1)
+// 	// Storage: Instance1Collective ProposalCount (r:1 w:1)
+// 	// Storage: Instance1Collective Voting (r:0 w:1)
+// 	fn propose_proposed(b: u32, m: u32, p: u32, ) -> Weight {
+// 		(39_869_000 as Weight)
+// 			// Standard Error: 0
+// 			.saturating_add((8_000 as Weight).saturating_mul(b as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((107_000 as Weight).saturating_mul(m as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((406_000 as Weight).saturating_mul(p as Weight))
+// 			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
+// 			.saturating_add(RocksDbWeight::get().writes(4 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	// Storage: Instance1Collective Voting (r:1 w:1)
+// 	fn vote(m: u32, ) -> Weight {
+// 		(37_387_000 as Weight)
+// 			// Standard Error: 2_000
+// 			.saturating_add((223_000 as Weight).saturating_mul(m as Weight))
+// 			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
+// 			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Voting (r:1 w:1)
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	// Storage: Instance1Collective Proposals (r:1 w:1)
+// 	// Storage: Instance1Collective ProposalOf (r:0 w:1)
+// 	fn close_early_disapproved(m: u32, p: u32, ) -> Weight {
+// 		(45_670_000 as Weight)
+// 			// Standard Error: 1_000
+// 			.saturating_add((170_000 as Weight).saturating_mul(m as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((358_000 as Weight).saturating_mul(p as Weight))
+// 			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
+// 			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Voting (r:1 w:1)
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	// Storage: Instance1Collective ProposalOf (r:1 w:1)
+// 	// Storage: Instance1Collective Proposals (r:1 w:1)
+// 	fn close_early_approved(b: u32, m: u32, p: u32, ) -> Weight {
+// 		(52_529_000 as Weight)
+// 			// Standard Error: 0
+// 			.saturating_add((7_000 as Weight).saturating_mul(b as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((206_000 as Weight).saturating_mul(m as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((412_000 as Weight).saturating_mul(p as Weight))
+// 			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
+// 			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Voting (r:1 w:1)
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	// Storage: Instance1Collective Prime (r:1 w:0)
+// 	// Storage: Instance1Collective Proposals (r:1 w:1)
+// 	// Storage: Instance1Collective ProposalOf (r:0 w:1)
+// 	fn close_disapproved(m: u32, p: u32, ) -> Weight {
+// 		(50_427_000 as Weight)
+// 			// Standard Error: 1_000
+// 			.saturating_add((170_000 as Weight).saturating_mul(m as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((354_000 as Weight).saturating_mul(p as Weight))
+// 			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
+// 			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Voting (r:1 w:1)
+// 	// Storage: Instance1Collective Members (r:1 w:0)
+// 	// Storage: Instance1Collective Prime (r:1 w:0)
+// 	// Storage: Instance1Collective ProposalOf (r:1 w:1)
+// 	// Storage: Instance1Collective Proposals (r:1 w:1)
+// 	fn close_approved(b: u32, m: u32, p: u32, ) -> Weight {
+// 		(57_031_000 as Weight)
+// 			// Standard Error: 0
+// 			.saturating_add((7_000 as Weight).saturating_mul(b as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((208_000 as Weight).saturating_mul(m as Weight))
+// 			// Standard Error: 1_000
+// 			.saturating_add((408_000 as Weight).saturating_mul(p as Weight))
+// 			.saturating_add(RocksDbWeight::get().reads(5 as Weight))
+// 			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
+// 	}
+// 	// Storage: Instance1Collective Proposals (r:1 w:1)
+// 	// Storage: Instance1Collective Voting (r:0 w:1)
+// 	// Storage: Instance1Collective ProposalOf (r:0 w:1)
+// 	fn disapprove_proposal(p: u32, ) -> Weight {
+// 		(27_458_000 as Weight)
+// 			// Standard Error: 1_000
+// 			.saturating_add((402_000 as Weight).saturating_mul(p as Weight))
+// 			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
+// 			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
+// 	}
+// }
