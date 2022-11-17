@@ -231,7 +231,7 @@ pub mod pallet {
 		}
 
 		fn offchain_worker(block_no: BlockNumberFor<T>) {
-			// 	// handle data requests each block
+			// handle data requests each block
 			if let Err(e) = Self::handle_data_requests() {
 				log::error!("IPFS: Encountered an error while processing data requests: {:?}", e);
 			}
@@ -316,7 +316,8 @@ pub mod pallet {
 
 			let x = TryInto::<u32>::try_into(fee).ok();
 			let extra_duration = x.unwrap() / 16; // 16 coins per 1 second
-			let mut asset = <IpfsAsset<T>>::get(&cid).unwrap(); //get deleting_at data of cid
+
+			let mut asset = <IpfsAsset<T>>::get(&cid).unwrap(); // get deleting_at data of cid
 			asset.deleting_at += extra_duration.into();
 
 			<IpfsAsset<T>>::insert(cid.clone(), asset);
@@ -470,8 +471,8 @@ pub mod pallet {
 				gateway_url,
 				owners: BTreeMap::<AccountOf<T>, OwnershipLayer>::new(),
 				created_at: current_block,
-				deleting_at: current_block
-					* <T as frame_system::Config>::BlockNumber::from(size / 100 as u32),
+				deleting_at: current_block *
+					<T as frame_system::Config>::BlockNumber::from(size / 100 as u32),
 				pinned: true, // true by default.
 			};
 
