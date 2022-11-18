@@ -227,7 +227,7 @@ pub mod pallet {
 				<DataQueue<T>>::kill(); // Research this - @charmitro
 			}
 
-			0
+			Weight::zero()
 		}
 
 		fn offchain_worker(block_no: BlockNumberFor<T>) {

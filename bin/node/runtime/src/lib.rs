@@ -170,7 +170,7 @@ const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
 /// by  Operational  extrinsics.
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 /// We allow for 2 seconds of compute with a 6 second average block time.
-const MAXIMUM_BLOCK_WEIGHT: Weight = 2 * WEIGHT_PER_SECOND;
+const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND.scalar_saturating_mul(2);
 
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 2400;
@@ -456,6 +456,7 @@ impl pallet_transaction_payment::Config for Runtime {
 }
 
 impl pallet_asset_tx_payment::Config for Runtime {
+	type Event = Event;
 	type Fungibles = Assets;
 	type OnChargeAssetTransaction = pallet_asset_tx_payment::FungiblesAdapter<
 		pallet_assets::BalanceToAssetBalance<Balances, Runtime, ConvertInto>,
@@ -965,6 +966,8 @@ parameter_types! {
 	pub const TermDuration: BlockNumber = 7 * DAYS;
 	pub const DesiredMembers: u32 = 13;
 	pub const DesiredRunnersUp: u32 = 7;
+	pub const MaxVoters: u32 = 10 * 1000;
+	pub const MaxCandidates: u32 = 1000;
 	pub const ElectionsPhragmenPalletId: LockIdentifier = *b"phrelect";
 }
 
@@ -988,6 +991,8 @@ impl pallet_elections_phragmen::Config for Runtime {
 	type DesiredMembers = DesiredMembers;
 	type DesiredRunnersUp = DesiredRunnersUp;
 	type TermDuration = TermDuration;
+	type MaxVoters = MaxVoters;
+	type MaxCandidates = MaxCandidates;
 	type WeightInfo = pallet_elections_phragmen::weights::SubstrateWeight<Runtime>;
 }
 
@@ -1528,8 +1533,10 @@ impl pallet_state_trie_migration::Config for Runtime {
 	type WeightInfo = ();
 }
 
+const ALLIANCE_MOTION_DURATION_IN_BLOCKS: BlockNumber = 5 * DAYS;
+
 parameter_types! {
-	pub const AllianceMotionDuration: BlockNumber = 5 * DAYS;
+	pub const AllianceMotionDuration: BlockNumber = ALLIANCE_MOTION_DURATION_IN_BLOCKS;
 	pub const AllianceMaxProposals: u32 = 100;
 	pub const AllianceMaxMembers: u32 = 100;
 }
@@ -1551,6 +1558,7 @@ parameter_types! {
 	pub const MaxFellows: u32 = AllianceMaxMembers::get() - MaxFounders::get();
 	pub const MaxAllies: u32 = 100;
 	pub const AllyDeposit: Balance = 10 * DOLLARS;
+	pub const RetirementPeriod: BlockNumber = ALLIANCE_MOTION_DURATION_IN_BLOCKS + (1 * DAYS);
 }
 
 impl pallet_alliance::Config for Runtime {
@@ -1587,6 +1595,7 @@ impl pallet_alliance::Config for Runtime {
 	type MaxMembersCount = AllianceMaxMembers;
 	type AllyDeposit = AllyDeposit;
 	type WeightInfo = pallet_alliance::weights::SubstrateWeight<Runtime>;
+	type RetirementPeriod = RetirementPeriod;
 }
 
 construct_runtime!(
@@ -1693,8 +1702,15 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
-	pallet_nomination_pools::migration::v2::MigrateToV2<Runtime>,
+	Migrations,
 >;
+
+// All migrations executed on runtime upgrade as a nested tuple of types implementing
+// `OnRuntimeUpgrade`.
+type Migrations = (
+	pallet_nomination_pools::migration::v2::MigrateToV2<Runtime>,
+	pallet_alliance::migration::Migration<Runtime>,
+);
 
 /// MMR helper types.
 mod mmr {
@@ -1714,6 +1730,7 @@ extern crate frame_benchmarking;
 mod benches {
 	define_benchmarks!(
 		[frame_benchmarking, BaselineBench::<Runtime>]
+		[pallet_alliance, Alliance]
 		[pallet_assets, Assets]
 		[pallet_babe, Babe]
 		[pallet_bags_list, BagsList]
@@ -1853,7 +1870,7 @@ impl_runtime_apis! {
 
 	impl pallet_nomination_pools_runtime_api::NominationPoolsApi<Block, AccountId, Balance> for Runtime {
 		fn pending_rewards(member_account: AccountId) -> Balance {
-			NominationPools::pending_rewards(member_account)
+			NominationPools::pending_rewards(member_account).unwrap_or_default()
 		}
 	}
 
@@ -1945,7 +1962,7 @@ impl_runtime_apis! {
 			storage_deposit_limit: Option<Balance>,
 			input_data: Vec<u8>,
 		) -> pallet_contracts_primitives::ContractExecResult<Balance> {
-			Contracts::bare_call(origin, dest, value, gas_limit, storage_deposit_limit, input_data, true)
+			Contracts::bare_call(origin, dest, value, Weight::from_ref_time(gas_limit), storage_deposit_limit, input_data, true)
 		}
 
 		fn instantiate(
@@ -1958,7 +1975,7 @@ impl_runtime_apis! {
 			salt: Vec<u8>,
 		) -> pallet_contracts_primitives::ContractInstantiateResult<AccountId, Balance>
 		{
-			Contracts::bare_instantiate(origin, value, gas_limit, storage_deposit_limit, code, data, salt, true)
+			Contracts::bare_instantiate(origin, value, Weight::from_ref_time(gas_limit), storage_deposit_limit, code, data, salt, true)
 		}
 
 		fn upload_code(
@@ -1987,6 +2004,17 @@ impl_runtime_apis! {
 		}
 		fn query_fee_details(uxt: <Block as BlockT>::Extrinsic, len: u32) -> FeeDetails<Balance> {
 			TransactionPayment::query_fee_details(uxt, len)
+		}
+	}
+
+	impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentCallApi<Block, Balance, Call>
+		for Runtime
+	{
+		fn query_call_info(call: Call, len: u32) -> RuntimeDispatchInfo<Balance> {
+			TransactionPayment::query_call_info(call, len)
+		}
+		fn query_call_fee_details(call: Call, len: u32) -> FeeDetails<Balance> {
+			TransactionPayment::query_call_fee_details(call, len)
 		}
 	}
 

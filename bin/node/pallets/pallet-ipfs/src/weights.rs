@@ -40,7 +40,7 @@
 #![allow(unused_parens)]
 #![allow(unused_imports)]
 
-use frame_support::{traits::Get, weights::{Weight, constants::RocksDbWeight}};
+use frame_support::{traits::{Get, IsType}, weights::{Weight, constants::RocksDbWeight, RefTimeWeight}};
 use sp_std::marker::PhantomData;
 
 /// Weight functions needed for pallet_ipfs.
@@ -53,9 +53,9 @@ pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Ipfs DataQueue (r:1 w:1)
 	fn create_ipfs_asset() -> Weight {
-		(12_238_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(1 as Weight))
-			.saturating_add(T::DbWeight::get().writes(1 as Weight))
+		Weight::from_ref_time(12_238_000 as RefTimeWeight)
+			.saturating_add(T::DbWeight::get().reads(1 as RefTimeWeight))
+			.saturating_add(T::DbWeight::get().writes(1 as RefTimeWeight))
 	}
 }
 
@@ -63,8 +63,8 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 impl WeightInfo for () {
 	// Storage: Ipfs DataQueue (r:1 w:1)
 	fn create_ipfs_asset() -> Weight {
-		(12_238_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(1 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
+	Weight::from_ref_time(12_238_000 as RefTimeWeight)
+			.saturating_add(RocksDbWeight::get().reads(1 as RefTimeWeight))
+			.saturating_add(RocksDbWeight::get().writes(1 as RefTimeWeight))
 	}
 }

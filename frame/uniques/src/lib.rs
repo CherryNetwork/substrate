@@ -60,6 +60,8 @@ pub use pallet::*;
 pub use types::*;
 pub use weights::WeightInfo;
 
+type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup>::Source;
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -107,9 +109,9 @@ pub mod pallet {
 		/// Standard collection creation is only allowed if the origin attempting it and the
 		/// collection are in this set.
 		type CreateOrigin: EnsureOriginWithArg<
-			Success = Self::AccountId,
 			Self::Origin,
 			Self::CollectionId,
+			Success = Self::AccountId,
 		>;
 
 		/// Locker trait to enable Locking mechanism downstream.
@@ -450,7 +452,7 @@ pub mod pallet {
 		pub fn create(
 			origin: OriginFor<T>,
 			collection: T::CollectionId,
-			admin: <T::Lookup as StaticLookup>::Source,
+			admin: AccountIdLookupOf<T>,
 		) -> DispatchResult {
 			let owner = T::CreateOrigin::ensure_origin(origin, &collection)?;
 			let admin = T::Lookup::lookup(admin)?;
@@ -486,7 +488,7 @@ pub mod pallet {
 		pub fn force_create(
 			origin: OriginFor<T>,
 			collection: T::CollectionId,
-			owner: <T::Lookup as StaticLookup>::Source,
+			owner: AccountIdLookupOf<T>,
 			free_holding: bool,
 		) -> DispatchResult {
 			T::ForceOrigin::ensure_origin(origin)?;
@@ -557,7 +559,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection: T::CollectionId,
 			item: T::ItemId,
-			owner: <T::Lookup as StaticLookup>::Source,
+			owner: AccountIdLookupOf<T>,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 			let owner = T::Lookup::lookup(owner)?;
@@ -586,7 +588,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection: T::CollectionId,
 			item: T::ItemId,
-			check_owner: Option<<T::Lookup as StaticLookup>::Source>,
+			check_owner: Option<AccountIdLookupOf<T>>,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 			let check_owner = check_owner.map(T::Lookup::lookup).transpose()?;
@@ -622,7 +624,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection: T::CollectionId,
 			item: T::ItemId,
-			dest: <T::Lookup as StaticLookup>::Source,
+			dest: AccountIdLookupOf<T>,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 			let dest = T::Lookup::lookup(dest)?;
@@ -682,10 +684,10 @@ pub mod pallet {
 					if T::Currency::reserve(&collection_details.owner, deposit - old).is_err() {
 						// NOTE: No alterations made to collection_details in this iteration so far,
 						// so this is OK to do.
-						continue
+						continue;
 					}
 				} else {
-					continue
+					continue;
 				}
 				collection_details.total_deposit.saturating_accrue(deposit);
 				collection_details.total_deposit.saturating_reduce(old);
@@ -834,7 +836,7 @@ pub mod pallet {
 		pub fn transfer_ownership(
 			origin: OriginFor<T>,
 			collection: T::CollectionId,
-			owner: <T::Lookup as StaticLookup>::Source,
+			owner: AccountIdLookupOf<T>,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 			let owner = T::Lookup::lookup(owner)?;
@@ -846,7 +848,7 @@ pub mod pallet {
 				let details = maybe_details.as_mut().ok_or(Error::<T, I>::UnknownCollection)?;
 				ensure!(origin == details.owner, Error::<T, I>::NoPermission);
 				if details.owner == owner {
-					return Ok(())
+					return Ok(());
 				}
 
 				// Move the deposit to the new owner.
@@ -882,9 +884,9 @@ pub mod pallet {
 		pub fn set_team(
 			origin: OriginFor<T>,
 			collection: T::CollectionId,
-			issuer: <T::Lookup as StaticLookup>::Source,
-			admin: <T::Lookup as StaticLookup>::Source,
-			freezer: <T::Lookup as StaticLookup>::Source,
+			issuer: AccountIdLookupOf<T>,
+			admin: AccountIdLookupOf<T>,
+			freezer: AccountIdLookupOf<T>,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 			let issuer = T::Lookup::lookup(issuer)?;
@@ -920,7 +922,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection: T::CollectionId,
 			item: T::ItemId,
-			delegate: <T::Lookup as StaticLookup>::Source,
+			delegate: AccountIdLookupOf<T>,
 		) -> DispatchResult {
 			let maybe_check: Option<T::AccountId> = T::ForceOrigin::try_origin(origin)
 				.map(|_| None)
@@ -973,7 +975,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection: T::CollectionId,
 			item: T::ItemId,
-			maybe_check_delegate: Option<<T::Lookup as StaticLookup>::Source>,
+			maybe_check_delegate: Option<AccountIdLookupOf<T>>,
 		) -> DispatchResult {
 			let maybe_check: Option<T::AccountId> = T::ForceOrigin::try_origin(origin)
 				.map(|_| None)
@@ -1024,10 +1026,10 @@ pub mod pallet {
 		pub fn force_item_status(
 			origin: OriginFor<T>,
 			collection: T::CollectionId,
-			owner: <T::Lookup as StaticLookup>::Source,
-			issuer: <T::Lookup as StaticLookup>::Source,
-			admin: <T::Lookup as StaticLookup>::Source,
-			freezer: <T::Lookup as StaticLookup>::Source,
+			owner: AccountIdLookupOf<T>,
+			issuer: AccountIdLookupOf<T>,
+			admin: AccountIdLookupOf<T>,
+			freezer: AccountIdLookupOf<T>,
 			free_holding: bool,
 			is_frozen: bool,
 		) -> DispatchResult {
@@ -1465,7 +1467,7 @@ pub mod pallet {
 			collection: T::CollectionId,
 			item: T::ItemId,
 			price: Option<ItemPrice<T, I>>,
-			whitelisted_buyer: Option<<T::Lookup as StaticLookup>::Source>,
+			whitelisted_buyer: Option<AccountIdLookupOf<T>>,
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 			let whitelisted_buyer = whitelisted_buyer.map(T::Lookup::lookup).transpose()?;

@@ -203,21 +203,20 @@ impl<B: ChainApi> ValidatedPool<B> {
 				let imported = self.pool.write().import(tx)?;
 
 				if let base::Imported::Ready { ref hash, .. } = imported {
-					self.import_notification_sinks.lock().retain_mut(|sink| {
-						match sink.try_send(*hash) {
-							Ok(()) => true,
-							Err(e) =>
-								if e.is_full() {
-									log::warn!(
-										target: "txpool",
-										"[{:?}] Trying to notify an import but the channel is full",
-										hash,
-									);
-									true
-								} else {
-									false
-								},
-						}
+					let sinks = &mut self.import_notification_sinks.lock();
+					sinks.retain_mut(|sink| match sink.try_send(*hash) {
+						Ok(()) => true,
+						Err(e) =>
+							if e.is_full() {
+								log::warn!(
+									target: "txpool",
+									"[{:?}] Trying to notify an import but the channel is full",
+									hash,
+								);
+								true
+							} else {
+								false
+							},
 					});
 				}
 

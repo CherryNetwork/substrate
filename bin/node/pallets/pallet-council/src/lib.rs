@@ -881,12 +881,12 @@ pub mod pallet {
 		pub fn set_gov_token_id(
 			origin: OriginFor<T>,
 			token_id: <T as assets::Config>::AssetId,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let _who = ensure_root(origin)?;
 
 			<GovTokenId<T, I>>::put(token_id);
 
-			Ok(None.into())
+			Ok(())
 		}
 	}
 }
