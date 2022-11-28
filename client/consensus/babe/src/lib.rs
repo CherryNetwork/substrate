@@ -834,17 +834,16 @@ where
 		slot: Slot,
 		epoch_descriptor: &ViableEpochDescriptor<B::Hash, NumberFor<B>, Epoch>,
 	) {
-		self.slot_notification_sinks.lock().retain_mut(|sink| {
-			match sink.try_send((slot, epoch_descriptor.clone())) {
-				Ok(()) => true,
-				Err(e) =>
-					if e.is_full() {
-						warn!(target: "babe", "Trying to notify a slot but the channel is full");
-						true
-					} else {
-						false
-					},
-			}
+		let sinks = &mut self.slot_notification_sinks.lock();
+		sinks.retain_mut(|sink| match sink.try_send((slot, epoch_descriptor.clone())) {
+			Ok(()) => true,
+			Err(e) =>
+				if e.is_full() {
+					warn!(target: "babe", "Trying to notify a slot but the channel is full");
+					true
+				} else {
+					false
+				},
 		});
 	}
 
