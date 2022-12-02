@@ -177,6 +177,8 @@ pub struct SeatHolder<AccountId, Balance> {
 
 pub use pallet::*;
 
+type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup>::Source;
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -278,7 +280,7 @@ pub mod pallet {
 			if !term_duration.is_zero() && (n % term_duration).is_zero() {
 				Self::do_phragmen()
 			} else {
-				0
+				Weight::zero()
 			}
 		}
 	}
@@ -372,7 +374,7 @@ pub mod pallet {
 			);
 
 			Voting::<T>::insert(&who, Voter { votes, deposit: new_deposit, stake: locked_stake });
-			Ok(None.into())
+			Ok(None::<Weight>.into())
 		}
 
 		/// Remove `origin` as a voter.
@@ -381,14 +383,14 @@ pub mod pallet {
 		///
 		/// The dispatch origin of this call must be signed and be a voter.
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::remove_voter())]
-		pub fn remove_voter(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+		pub fn remove_voter(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
 			ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
 
 			ensure!(Self::is_voter(&who), Error::<T>::MustBeVoter);
 			Self::do_remove_voter(&who);
-			Ok(None.into())
+			Ok(())
 		}
 
 		/// Submit oneself for candidacy. A fixed amount of deposit is recorded.
@@ -410,7 +412,7 @@ pub mod pallet {
 		pub fn submit_candidacy(
 			origin: OriginFor<T>,
 			#[pallet::compact] candidate_count: u32,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
 			ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
@@ -431,21 +433,21 @@ pub mod pallet {
 				.map_err(|_| Error::<T>::InsufficientCandidateFunds)?;
 
 			<Candidates<T>>::mutate(|c| c.insert(index, (who, T::CandidacyBond::get())));
-			Ok(None.into())
+			Ok(())
 		}
 
-		/// !SUDO call to set the Governance Token Asset ID
-		#[pallet::weight(0)]
-		pub fn set_gov_token_id(
-			origin: OriginFor<T>,
-			token_id: <T as assets::Config>::AssetId,
-		) -> DispatchResultWithPostInfo {
-			let _who = ensure_root(origin)?;
+		// /// !SUDO call to set the Governance Token Asset ID
+		// #[pallet::weight(0)]
+		// pub fn set_gov_token_id(
+		// 	origin: OriginFor<T>,
+		// 	token_id: <T as assets::Config>::AssetId,
+		// ) -> DispatchResultWithPostInfo {
+		// 	let _who = ensure_root(origin)?;
 
-			<GovTokenId<T>>::put(token_id);
+		// 	<GovTokenId<T>>::put(token_id);
 
-			Ok(None.into())
-		}
+		// 	Ok(None.into())
+		// }
 
 		/// Renounce one's intention to be a candidate for the next election round. 3 potential
 		/// outcomes exist:
@@ -470,10 +472,7 @@ pub mod pallet {
 			Renouncing::Member => <T as pallet::Config>::WeightInfo::renounce_candidacy_members(),
 			Renouncing::RunnerUp => <T as pallet::Config>::WeightInfo::renounce_candidacy_runners_up(),
 		})]
-		pub fn renounce_candidacy(
-			origin: OriginFor<T>,
-			renouncing: Renouncing,
-		) -> DispatchResultWithPostInfo {
+		pub fn renounce_candidacy(origin: OriginFor<T>, renouncing: Renouncing) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
 			ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
@@ -512,7 +511,7 @@ pub mod pallet {
 					})?;
 				},
 			};
-			Ok(None.into())
+			Ok(())
 		}
 
 		/// Remove a particular member from the set. This is effective immediately and the bond of
@@ -540,10 +539,10 @@ pub mod pallet {
 		})]
 		pub fn remove_member(
 			origin: OriginFor<T>,
-			who: <T::Lookup as StaticLookup>::Source,
+			who: AccountIdLookupOf<T>,
 			slash_bond: bool,
 			rerun_election: bool,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			ensure_root(origin)?;
 			let who = T::Lookup::lookup(who)?;
 
@@ -555,7 +554,7 @@ pub mod pallet {
 			}
 
 			// no refund needed.
-			Ok(None.into())
+			Ok(())
 		}
 
 		/// Clean all voters who are defunct (i.e. they do not serve any purpose at all). The
@@ -573,13 +572,13 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			_num_voters: u32,
 			_num_defunct: u32,
-		) -> DispatchResultWithPostInfo {
+		) -> DispatchResult {
 			let _ = ensure_root(origin)?;
 			<Voting<T>>::iter()
 				.filter(|(_, x)| Self::is_defunct_voter(&x.votes))
 				.for_each(|(dv, _)| Self::do_remove_voter(&dv));
 
-			Ok(None.into())
+			Ok(())
 		}
 	}
 
@@ -1220,7 +1219,7 @@ mod tests {
 
 	parameter_types! {
 		pub BlockWeights: frame_system::limits::BlockWeights =
-			frame_system::limits::BlockWeights::simple_max(1024);
+			frame_system::limits::BlockWeights::simple_max(frame_support::weights::Weight::from_ref_time(1024));
 	}
 
 	impl frame_system::Config for Test {
@@ -1413,9 +1412,7 @@ mod tests {
 			self
 		}
 		pub fn genesis_members(mut self, members: Vec<(u64, u64)>) -> Self {
-			MEMBERS.with(|m| {
-				*m.borrow_mut() = members.iter().map(|(m, _)| m.clone()).collect::<Vec<_>>()
-			});
+			MEMBERS.with(|m| *m.borrow_mut() = members.iter().map(|(m, _)| *m).collect::<Vec<_>>());
 			self.genesis_members = members;
 			self
 		}
@@ -1430,8 +1427,7 @@ mod tests {
 		pub fn build_and_execute(self, test: impl FnOnce() -> ()) {
 			sp_tracing::try_init_simple();
 			MEMBERS.with(|m| {
-				*m.borrow_mut() =
-					self.genesis_members.iter().map(|(m, _)| m.clone()).collect::<Vec<_>>()
+				*m.borrow_mut() = self.genesis_members.iter().map(|(m, _)| *m).collect::<Vec<_>>()
 			});
 			let mut ext: sp_io::TestExternalities = GenesisConfig {
 				balances: pallet_balances::GenesisConfig::<Test> {
@@ -1579,7 +1575,7 @@ mod tests {
 		ensure_members_has_approval_stake();
 	}
 
-	fn submit_candidacy(origin: Origin) -> DispatchResultWithPostInfo {
+	fn submit_candidacy(origin: Origin) -> sp_runtime::DispatchResult {
 		Elections::submit_candidacy(origin, Elections::candidates().len() as u32)
 	}
 

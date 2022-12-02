@@ -340,7 +340,7 @@ pub mod pallet {
 			if (n % T::IntakePeriod::get()).is_zero() {
 				Self::pursue_target(T::MaxIntakeBids::get())
 			} else {
-				0
+				Weight::zero()
 			}
 		}
 		fn on_runtime_upgrade() -> frame_support::weights::Weight {

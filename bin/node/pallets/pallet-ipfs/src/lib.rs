@@ -226,8 +226,7 @@ pub mod pallet {
 			if block_no % 2u32.into() == 1u32.into() {
 				<DataQueue<T>>::kill(); // Research this - @charmitro
 			}
-
-			0
+			Weight::zero()
 		}
 
 		fn offchain_worker(block_no: BlockNumberFor<T>) {

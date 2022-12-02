@@ -32,7 +32,7 @@ pub fn migrate<T: frame_system::Config + crate::Config, P: GetStorageVersion + P
 			"Attempted to apply migration to v2 but failed because storage version is {:?}",
 			on_chain_storage_version,
 		);
-		0
+		Weight::zero()
 	}
 }
 
