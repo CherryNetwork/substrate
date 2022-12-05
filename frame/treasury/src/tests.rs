@@ -19,8 +19,6 @@
 
 #![cfg(test)]
 
-use std::cell::RefCell;
-
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
@@ -62,16 +60,16 @@ impl frame_system::Config for Test {
 	type BlockWeights = ();
 	type BlockLength = ();
 	type DbWeight = ();
-	type Origin = Origin;
+	type RuntimeOrigin = RuntimeOrigin;
 	type Index = u64;
 	type BlockNumber = u64;
-	type Call = Call;
+	type RuntimeCall = RuntimeCall;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
 	type AccountId = u128; // u64 is not enough to hold bytes used to generate bounty account
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
 	type PalletInfo = PalletInfo;
@@ -88,14 +86,11 @@ impl pallet_balances::Config for Test {
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
 	type Balance = u64;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type DustRemoval = ();
 	type ExistentialDeposit = ConstU64<1>;
 	type AccountStore = System;
 	type WeightInfo = ();
-}
-thread_local! {
-	static TEN_TO_FOURTEEN: RefCell<Vec<u128>> = RefCell::new(vec![10,11,12,13,14]);
 }
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
@@ -104,21 +99,21 @@ parameter_types! {
    pub const AllowedPoposalPeriod: u64 = 2;
 }
 pub struct TestSpendOrigin;
-impl frame_support::traits::EnsureOrigin<Origin> for TestSpendOrigin {
+impl frame_support::traits::EnsureOrigin<RuntimeOrigin> for TestSpendOrigin {
 	type Success = u64;
-	fn try_origin(o: Origin) -> Result<Self::Success, Origin> {
-		Result::<frame_system::RawOrigin<_>, Origin>::from(o).and_then(|o| match o {
+	fn try_origin(o: RuntimeOrigin) -> Result<Self::Success, RuntimeOrigin> {
+		Result::<frame_system::RawOrigin<_>, RuntimeOrigin>::from(o).and_then(|o| match o {
 			frame_system::RawOrigin::Root => Ok(u64::max_value()),
 			frame_system::RawOrigin::Signed(10) => Ok(5),
 			frame_system::RawOrigin::Signed(11) => Ok(10),
 			frame_system::RawOrigin::Signed(12) => Ok(20),
 			frame_system::RawOrigin::Signed(13) => Ok(50),
-			r => Err(Origin::from(r)),
+			r => Err(RuntimeOrigin::from(r)),
 		})
 	}
 	#[cfg(feature = "runtime-benchmarks")]
-	fn try_successful_origin() -> Result<Origin, ()> {
-		Ok(Origin::root())
+	fn try_successful_origin() -> Result<RuntimeOrigin, ()> {
+		Ok(RuntimeOrigin::root())
 	}
 }
 
@@ -127,7 +122,7 @@ impl Config for Test {
 	type Currency = pallet_balances::Pallet<Test>;
 	type ApproveOrigin = frame_system::EnsureRoot<u128>;
 	type RejectOrigin = frame_system::EnsureRoot<u128>;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type OnSlash = ();
 	type ProposalBond = ProposalBond;
 	type ProposalBondMinimum = ConstU64<1>;
@@ -300,14 +295,20 @@ fn reject_already_rejected_spend_proposal_fails() {
 #[test]
 fn reject_non_existent_spend_proposal_fails() {
 	new_test_ext().execute_with(|| {
-		assert_noop!(Treasury::reject_proposal(Origin::root(), 0), Error::<Test, _>::InvalidIndex);
+		assert_noop!(
+			Treasury::reject_proposal(RuntimeOrigin::root(), 0),
+			Error::<Test, _>::InvalidIndex
+		);
 	});
 }
 
 #[test]
 fn accept_non_existent_spend_proposal_fails() {
 	new_test_ext().execute_with(|| {
-		assert_noop!(Treasury::approve_proposal(Origin::root(), 0), Error::<Test, _>::InvalidIndex);
+		assert_noop!(
+			Treasury::approve_proposal(RuntimeOrigin::root(), 0),
+			Error::<Test, _>::InvalidIndex
+		);
 	});
 }
 
@@ -449,7 +450,7 @@ fn max_approvals_limited() {
 		// One too many will fail
 		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3, 1, true));
 		assert_noop!(
-			Treasury::approve_proposal(Origin::root(), 0),
+			Treasury::approve_proposal(RuntimeOrigin::root(), 0),
 			Error::<Test, _>::TooManyApprovals
 		);
 	});
@@ -463,11 +464,11 @@ fn remove_already_removed_approval_fails() {
 		assert_ok!(Treasury::propose_spend(Origin::signed(0), 100, 3, 0, true));
 		assert_ok!(Treasury::approve_proposal(Origin::root(), 0));
 		assert_eq!(Treasury::approvals(), vec![0]);
-		assert_ok!(Treasury::remove_approval(Origin::root(), 0));
+		assert_ok!(Treasury::remove_approval(RuntimeOrigin::root(), 0));
 		assert_eq!(Treasury::approvals(), vec![]);
 
 		assert_noop!(
-			Treasury::remove_approval(Origin::root(), 0),
+			Treasury::remove_approval(RuntimeOrigin::root(), 0),
 			Error::<Test, _>::ProposalNotApproved
 		);
 	});
