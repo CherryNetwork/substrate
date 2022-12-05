@@ -199,8 +199,8 @@ pub mod pallet {
 
 		/// The outer event type.
 		type RuntimeEvent: From<Event<Self, I>>
-		+ IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		
+			+ IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
 		/// The time-out for council motions.
 		type MotionDuration: Get<Self::BlockNumber>;
 

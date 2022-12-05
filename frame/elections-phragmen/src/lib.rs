@@ -942,7 +942,7 @@ impl<T: Config> Pallet<T> {
 
 		if candidates_and_deposit.len().is_zero() {
 			Self::deposit_event(Event::EmptyTerm);
-			return T::DbWeight::get().reads(3);
+			return T::DbWeight::get().reads(3)
 		}
 
 		// All of the new winners that come out of phragmen will thus have a deposit recorded.
@@ -977,7 +977,7 @@ impl<T: Config> Pallet<T> {
 					"Failed to run election. Number of voters exceeded",
 				);
 				Self::deposit_event(Event::ElectionError);
-				return T::DbWeight::get().reads(3 + max_voters as u64);
+				return T::DbWeight::get().reads(3 + max_voters as u64)
 			},
 		}
 
@@ -1084,8 +1084,8 @@ impl<T: Config> Pallet<T> {
 					// All candidates/members/runners-up who are no longer retaining a position as a
 					// seat holder will lose their bond.
 					candidates_and_deposit.iter().for_each(|(c, d)| {
-						if new_members_ids_sorted.binary_search(c).is_err()
-							&& new_runners_up_ids_sorted.binary_search(c).is_err()
+						if new_members_ids_sorted.binary_search(c).is_err() &&
+							new_runners_up_ids_sorted.binary_search(c).is_err()
 						{
 							let (imbalance, _) =
 								<T as pallet::Config>::Currency::slash_reserved(c, *d);
