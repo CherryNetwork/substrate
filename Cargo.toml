@@ -8,7 +8,6 @@ members = [
 	"bin/node/bench",
 	"bin/node/cli",
 	"bin/node/executor",
-	"bin/node/pallets/pallet-council",
 	"bin/node/pallets/pallet-ipfs",
 	"bin/node/primitives",
 	"bin/node/rpc",
