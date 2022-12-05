@@ -50,12 +50,15 @@ use sp_std::{marker::PhantomData, prelude::*, result, vec};
 
 use frame_support::{
 	codec::{Decode, Encode, MaxEncodedLen},
-	dispatch::{DispatchError, DispatchResultWithPostInfo, Dispatchable, PostDispatchInfo},
+	dispatch::{
+		DispatchError, DispatchResultWithPostInfo, Dispatchable, GetDispatchInfo, Pays,
+		PostDispatchInfo,
+	},
 	ensure,
 	traits::{
 		Backing, ChangeMembers, EnsureOrigin, Get, GetBacking, InitializeMembers, StorageVersion,
 	},
-	weights::{GetDispatchInfo, Weight},
+	weights::Weight,
 };
 
 #[cfg(test)]
@@ -184,18 +187,19 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config<I: 'static = ()>: frame_system::Config + assets::Config {
 		/// The outer origin type.
-		type Origin: From<RawOrigin<Self::AccountId, I>>;
+		type RuntimeOrigin: From<RawOrigin<Self::AccountId, I>>;
 
 		/// The outer call dispatch type.
 		type Proposal: Parameter
 			+ Dispatchable<
-				Origin = <Self as frame_system::Config>::Origin,
+				RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin,
 				PostInfo = PostDispatchInfo,
 			> + From<frame_system::Call<Self>>
 			+ GetDispatchInfo;
 
 		/// The outer event type.
-		type Event: From<Event<Self, I>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self, I>>
+			+ IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// The time-out for council motions.
 		type MotionDuration: Get<Self::BlockNumber>;
@@ -925,7 +929,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		ensure!(proposal_len <= length_bound, Error::<T, I>::WrongProposalLength);
 		let proposal = ProposalOf::<T, I>::get(hash).ok_or(Error::<T, I>::ProposalMissing)?;
 		let proposal_weight = proposal.get_dispatch_info().weight;
-		ensure!(proposal_weight <= weight_bound, Error::<T, I>::WrongProposalWeight);
+		ensure!(proposal_weight.all_lte(weight_bound), Error::<T, I>::WrongProposalWeight);
 		Ok((proposal, proposal_len as usize))
 	}
 

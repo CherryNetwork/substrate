@@ -121,7 +121,9 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: CreateSignedTransaction<Call<Self>> + frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
+		//From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// The Currency handler for the IPFS pallet.
 		type Currency: Currency<Self::AccountId>;
@@ -130,7 +132,7 @@ pub mod pallet {
 		#[pallet::constant]
 		type MaxIpfsOwned: Get<u32>;
 
-		type Call: From<Call<Self>>;
+		type RuntimeCall: From<<Self as frame_system::Config>::RuntimeCall>;
 
 		type AuthorityId: AppCrypto<Self::Public, Self::Signature>;
 
