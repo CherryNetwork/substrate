@@ -6422,6 +6422,7 @@ dependencies = [
  "sp-core",
  "sp-rpc",
  "sp-runtime",
+ "sp-weights",
 ]
 
 [[package]]
@@ -6432,6 +6433,7 @@ dependencies = [
  "parity-scale-codec 3.2.1",
  "sp-api",
  "sp-runtime",
+ "sp-weights",
 ]
 
 [[package]]
