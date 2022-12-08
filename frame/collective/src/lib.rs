@@ -181,7 +181,7 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config<I: 'static = ()>: frame_system::Config {
 		/// The runtime origin type.
-		type RuntimeOrigin: From<RawOrigin<Self::AccountId, I>>;
+		type RuntimeOrigin: From<frame_system::RawOrigin<Self::AccountId>>;
 
 		/// The runtime call dispatch type.
 		type Proposal: Parameter
@@ -448,7 +448,7 @@ pub mod pallet {
 			ensure!(proposal_len <= length_bound as usize, Error::<T, I>::WrongProposalLength);
 
 			let proposal_hash = T::Hashing::hash_of(&proposal);
-			let result = proposal.dispatch(RawOrigin::Member(who).into());
+			let result = proposal.dispatch(frame_system::RawOrigin::Root.into());
 			Self::deposit_event(Event::MemberExecuted {
 				proposal_hash,
 				result: result.map(|_| ()).map_err(|e| e.error),
@@ -752,8 +752,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		let proposal_hash = T::Hashing::hash_of(&proposal);
 		ensure!(!<ProposalOf<T, I>>::contains_key(proposal_hash), Error::<T, I>::DuplicateProposal);
 
-		let seats = Self::members().len() as MemberCount;
-		let result = proposal.dispatch(RawOrigin::Members(1, seats).into());
+		let result = proposal.dispatch(frame_system::RawOrigin::Root.into());
 		Self::deposit_event(Event::Executed {
 			proposal_hash,
 			result: result.map(|_| ()).map_err(|e| e.error),
@@ -967,16 +966,15 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 	/// Computation and i/o `O(P)` where:
 	/// - `P` is number of active proposals
 	fn do_approve_proposal(
-		seats: MemberCount,
-		yes_votes: MemberCount,
+		_seats: MemberCount,
+		_yes_votes: MemberCount,
 		proposal_hash: T::Hash,
 		proposal: <T as Config<I>>::Proposal,
 	) -> (Weight, u32) {
 		Self::deposit_event(Event::Approved { proposal_hash });
 
 		let dispatch_weight = proposal.get_dispatch_info().weight;
-		let origin = RawOrigin::Members(yes_votes, seats).into();
-		let result = proposal.dispatch(origin);
+		let result = proposal.dispatch(frame_system::RawOrigin::Root.into());
 		Self::deposit_event(Event::Executed {
 			proposal_hash,
 			result: result.map(|_| ()).map_err(|e| e.error),
