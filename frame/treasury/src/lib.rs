@@ -284,9 +284,13 @@ pub mod pallet {
 		fn build(&self) {
 			// Create Treasury account
 			let account_id = <Pallet<T, I>>::account_id();
-			let min = T::Currency::minimum_balance();
+			let initial_supply: u128 = 1173400000000000000000000;
+			let min = initial_supply.saturated_into();
 			if T::Currency::free_balance(&account_id) < min {
-				let _ = T::Currency::make_free_balance_be(&account_id, min);
+				let _ = T::Currency::make_free_balance_be(
+					&account_id,
+					min,
+				);
 			}
 		}
 	}
