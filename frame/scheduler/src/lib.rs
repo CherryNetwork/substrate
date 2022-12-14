@@ -1120,11 +1120,11 @@ impl<T: Config> Pallet<T> {
 		};
 		let call_weight = call.get_dispatch_info().weight;
 		// We only allow a scheduled call if it cannot push the weight past the limit.
-		let max_weight = base_weight.saturating_add(call_weight);
+		// let max_weight = base_weight.saturating_add(call_weight);
 
-		if !weight.can_accrue(max_weight) {
-			return Err(Overweight)
-		}
+		// if !weight.can_accrue(max_weight) {
+		// 	return Err(Overweight)
+		// }
 
 		let dispatch_origin = origin.into();
 		let (maybe_actual_call_weight, result) = match call.dispatch(dispatch_origin) {
