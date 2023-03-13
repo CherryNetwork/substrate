@@ -189,7 +189,6 @@ pub mod pallet {
 	const STORAGE_VERSION: StorageVersion = StorageVersion::new(4);
 
 	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
 	#[pallet::storage_version(STORAGE_VERSION)]
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(PhantomData<T>);
@@ -321,8 +320,8 @@ pub mod pallet {
 			#[pallet::compact] value: BalanceOf<T>,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
-			ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
+			// let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
+			// ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
 
 			// votes should not be empty and more than `MAXIMUM_VOTE` in any case.
 			ensure!(votes.len() <= MAXIMUM_VOTE, Error::<T>::MaximumVotesExceeded);
@@ -385,8 +384,8 @@ pub mod pallet {
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::remove_voter())]
 		pub fn remove_voter(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
-			let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
-			ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
+			// let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
+			// ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
 
 			ensure!(Self::is_voter(&who), Error::<T>::MustBeVoter);
 			Self::do_remove_voter(&who);
@@ -414,8 +413,8 @@ pub mod pallet {
 			#[pallet::compact] candidate_count: u32,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
-			let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
-			ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
+			// let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
+			// ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
 
 			let actual_count = <Candidates<T>>::decode_len().unwrap_or(0) as u32;
 			ensure!(actual_count <= candidate_count, Error::<T>::InvalidWitnessData);
@@ -474,8 +473,8 @@ pub mod pallet {
 		})]
 		pub fn renounce_candidacy(origin: OriginFor<T>, renouncing: Renouncing) -> DispatchResult {
 			let who = ensure_signed(origin)?;
-			let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
-			ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
+			// let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
+			// ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
 
 			match renouncing {
 				Renouncing::Member => {
@@ -658,10 +657,6 @@ pub mod pallet {
 	#[pallet::getter(fn members)]
 	pub type Members<T: Config> =
 		StorageValue<_, Vec<SeatHolder<T::AccountId, BalanceOf<T>>>, ValueQuery>;
-
-	#[pallet::storage]
-	#[pallet::getter(fn govtokenid)]
-	pub type GovTokenId<T: Config> = StorageValue<_, <T as assets::Config>::AssetId, ValueQuery>;
 
 	/// The current reserved runners-up.
 	///

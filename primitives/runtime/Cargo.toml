@@ -29,6 +29,8 @@ sp-core = { version = "7.0.0", default-features = false, path = "../core" }
 sp-io = { version = "7.0.0", default-features = false, path = "../io" }
 sp-std = { version = "5.0.0", default-features = false, path = "../std" }
 sp-weights = { version = "4.0.0", default-features = false, path = "../weights" }
+serde_bytes = { version = "0.11", default-features = false, features = [ "alloc"] }
+serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
 
 [dependencies.serde]
 default-features = false
