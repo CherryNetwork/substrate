@@ -1339,7 +1339,7 @@ version = "1.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "22813a6dc45b335f9bade10bf7271dc477e81113e89eb251a0bc2a8a81c536e1"
 dependencies = [
- "bstr 0.2.15",
+ "bstr 0.2.17",
  "csv-core",
  "itoa 0.4.8",
  "ryu",
@@ -2235,7 +2235,7 @@ dependencies = [
  "frame-support",
  "log",
  "pallet-elections-phragmen",
- "parity-scale-codec",
+ "parity-scale-codec 3.2.1",
  "serde",
  "serde_json",
  "sp-core",
@@ -2687,7 +2687,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0a1e17342619edbc21a964c2afbeb6c820c6a2560032872f397bb97ea127bd0a"
 dependencies = [
  "aho-corasick",
- "bstr 0.2.15",
+ "bstr 0.2.17",
  "fnv",
  "log",
  "regex",
@@ -4250,7 +4250,7 @@ version = "4.0.0-dev"
 dependencies = [
  "futures",
  "log",
- "parity-scale-codec",
+ "parity-scale-codec 3.2.1",
  "sc-block-builder",
  "sc-client-api",
  "sc-offchain",
@@ -4272,7 +4272,7 @@ version = "4.0.0-dev"
 dependencies = [
  "anyhow",
  "jsonrpsee",
- "parity-scale-codec",
+ "parity-scale-codec 3.2.1",
  "serde",
  "serde_json",
  "sp-api",
@@ -4566,7 +4566,7 @@ version = "3.0.0-dev"
 dependencies = [
  "array-bytes",
  "assert_cmd",
- "clap 4.0.11",
+ "clap 4.0.29",
  "clap_complete",
  "criterion",
  "frame-benchmarking-cli",
@@ -5771,8 +5771,9 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "log",
  "pallet-balances",
- "parity-scale-codec",
+ "parity-scale-codec 3.2.1",
  "scale-info",
  "sp-arithmetic",
  "sp-core",
@@ -6076,7 +6077,7 @@ version = "1.0.0-dev"
 dependencies = [
  "frame-support",
  "frame-system",
- "parity-scale-codec",
+ "parity-scale-codec 3.2.1",
  "scale-info",
  "sp-core",
  "sp-io",
@@ -8145,7 +8146,7 @@ dependencies = [
  "tempfile",
  "tracing",
  "tracing-subscriber",
- "wasmi 0.13.0",
+ "wasmi 0.13.2",
  "wat",
 ]
 
@@ -8162,7 +8163,7 @@ dependencies = [
  "thiserror",
  "wasm-instrument 0.3.0",
  "wasmer",
- "wasmi 0.13.0",
+ "wasmi 0.13.2",
 ]
 
 [[package]]
@@ -8176,7 +8177,7 @@ dependencies = [
  "sp-runtime-interface",
  "sp-sandbox",
  "sp-wasm-interface",
- "wasmi 0.13.0",
+ "wasmi 0.13.2",
 ]
 
 [[package]]
@@ -9534,7 +9535,7 @@ name = "sp-beefy"
 version = "4.0.0-dev"
 dependencies = [
  "array-bytes",
- "parity-scale-codec",
+ "parity-scale-codec 3.2.1",
  "scale-info",
  "serde",
  "sp-api",
@@ -9713,7 +9714,7 @@ dependencies = [
  "substrate-bip39",
  "thiserror",
  "tiny-bip39",
- "wasmi 0.13.0",
+ "wasmi 0.13.2",
  "zeroize",
 ]
 
@@ -9948,7 +9949,6 @@ dependencies = [
  "rand 0.7.3",
  "scale-info",
  "serde",
- "serde_bytes",
  "serde_json",
  "sp-api",
  "sp-application-crypto",
@@ -10047,7 +10047,7 @@ dependencies = [
  "sp-io",
  "sp-std",
  "sp-wasm-interface",
- "wasmi 0.13.0",
+ "wasmi 0.13.2",
  "wat",
 ]
 
@@ -10247,7 +10247,7 @@ dependencies = [
  "log",
  "parity-scale-codec 3.2.1",
  "sp-std",
- "wasmi 0.13.0",
+ "wasmi 0.13.2",
  "wasmtime",
 ]
 
@@ -10902,7 +10902,7 @@ dependencies = [
  "signal-hook-registry",
  "socket2",
  "tokio-macros",
- "windows-sys 0.42.0",
+ "winapi",
 ]
 
 [[package]]
@@ -11172,11 +11172,11 @@ checksum = "59547bce71d9c38b83d9c0e92b6066c4253371f15005def0c30d9657f50c7642"
 name = "try-runtime-cli"
 version = "0.10.0-dev"
 dependencies = [
- "clap 4.0.11",
+ "clap 4.0.29",
  "frame-remote-externalities",
  "frame-try-runtime",
  "log",
- "parity-scale-codec",
+ "parity-scale-codec 3.2.1",
  "sc-chain-spec",
  "sc-cli",
  "sc-executor",
@@ -11820,7 +11820,7 @@ checksum = "06c326c93fbf86419608361a2c925a31754cf109da1b8b55737070b4d6669422"
 dependencies = [
  "parity-wasm",
  "wasmi-validation",
- "wasmi_core 0.2.0",
+ "wasmi_core 0.2.1",
 ]
 
 [[package]]
@@ -11870,7 +11870,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c5bf998ab792be85e20e771fe14182b4295571ad1d4f89d3da521c1bef5f597a"
 dependencies = [
  "downcast-rs",
- "libm",
+ "libm 0.2.6",
  "num-traits",
 ]
 
