@@ -107,7 +107,6 @@ use frame_support::{
 	},
 	weights::Weight,
 };
-use pallet_assets as assets;
 use scale_info::TypeInfo;
 use sp_npos_elections::{ElectionResult, ExtendedBalance};
 use sp_runtime::{
@@ -194,7 +193,7 @@ pub mod pallet {
 	pub struct Pallet<T>(PhantomData<T>);
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config + assets::Config {
+	pub trait Config: frame_system::Config {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// Identifier for the elections-phragmen pallet's lock
@@ -1266,23 +1265,6 @@ mod tests {
 		pub const MetadataDepositPerByte: u64 = 1;
 	}
 
-	impl pallet_assets::Config for Test {
-		type Event = Event;
-		type Balance = u64;
-		type AssetId = u32;
-		type Currency = Balances;
-		type ForceOrigin = frame_system::EnsureRoot<u64>;
-		type AssetDeposit = AssetDeposit;
-		type MetadataDepositBase = MetadataDepositBase;
-		type MetadataDepositPerByte = MetadataDepositPerByte;
-		type ApprovalDeposit = ApprovalDeposit;
-		type StringLimit = StringLimit;
-		type Freezer = ();
-		type WeightInfo = ();
-		type Extra = ();
-		type AssetAccountDeposit = AssetDeposit;
-	}
-
 	frame_support::parameter_types! {
 		pub static VotingBondBase: u64 = 2;
 		pub static VotingBondFactor: u64 = 0;
@@ -1375,7 +1357,6 @@ mod tests {
 			UncheckedExtrinsic = UncheckedExtrinsic
 		{
 			System: frame_system::{Pallet, Call, Event<T>},
-			Assets: pallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>},
 			Balances: pallet_balances::{Pallet, Call, Event<T>, Config<T>},
 			Elections: elections_phragmen::{Pallet, Call, Event<T>, Config<T>},
 		}
@@ -1440,25 +1421,6 @@ mod tests {
 				},
 				elections: elections_phragmen::GenesisConfig::<Test> {
 					members: self.genesis_members,
-				},
-				assets: pallet_assets::GenesisConfig::<Test> {
-					assets: vec![
-						// id, owner, is_sufficient, min_balance
-						(999, 0, true, 1),
-					],
-					metadata: vec![
-						// id, name, symbol, decimals
-						(999, "Token Name".into(), "TOKEN".into(), 10),
-					],
-					accounts: vec![
-						// id, account_id, balance
-						(999, 1, 100),
-						(999, 2, 100),
-						(999, 3, 100),
-						(999, 4, 100),
-						(999, 5, 100),
-						(999, 6, 100),
-					],
 				},
 			}
 			.build_storage()
