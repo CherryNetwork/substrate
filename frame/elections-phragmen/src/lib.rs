@@ -107,7 +107,6 @@ use frame_support::{
 	},
 	weights::Weight,
 };
-use pallet_assets as assets;
 use scale_info::TypeInfo;
 use sp_npos_elections::{ElectionResult, ExtendedBalance};
 use sp_runtime::{
@@ -189,13 +188,12 @@ pub mod pallet {
 	const STORAGE_VERSION: StorageVersion = StorageVersion::new(4);
 
 	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
 	#[pallet::storage_version(STORAGE_VERSION)]
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(PhantomData<T>);
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config + assets::Config {
+	pub trait Config: frame_system::Config {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// Identifier for the elections-phragmen pallet's lock
@@ -321,8 +319,8 @@ pub mod pallet {
 			#[pallet::compact] value: BalanceOf<T>,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
-			let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
-			ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
+			// let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
+			// ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
 
 			// votes should not be empty and more than `MAXIMUM_VOTE` in any case.
 			ensure!(votes.len() <= MAXIMUM_VOTE, Error::<T>::MaximumVotesExceeded);
@@ -385,8 +383,8 @@ pub mod pallet {
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::remove_voter())]
 		pub fn remove_voter(origin: OriginFor<T>) -> DispatchResult {
 			let who = ensure_signed(origin)?;
-			let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
-			ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
+			// let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
+			// ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
 
 			ensure!(Self::is_voter(&who), Error::<T>::MustBeVoter);
 			Self::do_remove_voter(&who);
@@ -414,8 +412,8 @@ pub mod pallet {
 			#[pallet::compact] candidate_count: u32,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
-			let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
-			ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
+			// let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
+			// ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
 
 			let actual_count = <Candidates<T>>::decode_len().unwrap_or(0) as u32;
 			ensure!(actual_count <= candidate_count, Error::<T>::InvalidWitnessData);
@@ -474,8 +472,8 @@ pub mod pallet {
 		})]
 		pub fn renounce_candidacy(origin: OriginFor<T>, renouncing: Renouncing) -> DispatchResult {
 			let who = ensure_signed(origin)?;
-			let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
-			ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
+			// let balance = <assets::Pallet<T>>::balance(<GovTokenId<T>>::get(), who.clone());
+			// ensure!(!balance.is_zero(), Error::<T>::InsufficientCandidateFunds);
 
 			match renouncing {
 				Renouncing::Member => {
@@ -658,10 +656,6 @@ pub mod pallet {
 	#[pallet::getter(fn members)]
 	pub type Members<T: Config> =
 		StorageValue<_, Vec<SeatHolder<T::AccountId, BalanceOf<T>>>, ValueQuery>;
-
-	#[pallet::storage]
-	#[pallet::getter(fn govtokenid)]
-	pub type GovTokenId<T: Config> = StorageValue<_, <T as assets::Config>::AssetId, ValueQuery>;
 
 	/// The current reserved runners-up.
 	///
@@ -1271,23 +1265,6 @@ mod tests {
 		pub const MetadataDepositPerByte: u64 = 1;
 	}
 
-	impl pallet_assets::Config for Test {
-		type Event = Event;
-		type Balance = u64;
-		type AssetId = u32;
-		type Currency = Balances;
-		type ForceOrigin = frame_system::EnsureRoot<u64>;
-		type AssetDeposit = AssetDeposit;
-		type MetadataDepositBase = MetadataDepositBase;
-		type MetadataDepositPerByte = MetadataDepositPerByte;
-		type ApprovalDeposit = ApprovalDeposit;
-		type StringLimit = StringLimit;
-		type Freezer = ();
-		type WeightInfo = ();
-		type Extra = ();
-		type AssetAccountDeposit = AssetDeposit;
-	}
-
 	frame_support::parameter_types! {
 		pub static VotingBondBase: u64 = 2;
 		pub static VotingBondFactor: u64 = 0;
@@ -1380,7 +1357,6 @@ mod tests {
 			UncheckedExtrinsic = UncheckedExtrinsic
 		{
 			System: frame_system::{Pallet, Call, Event<T>},
-			Assets: pallet_assets::{Pallet, Call, Storage, Event<T>, Config<T>},
 			Balances: pallet_balances::{Pallet, Call, Event<T>, Config<T>},
 			Elections: elections_phragmen::{Pallet, Call, Event<T>, Config<T>},
 		}
@@ -1445,25 +1421,6 @@ mod tests {
 				},
 				elections: elections_phragmen::GenesisConfig::<Test> {
 					members: self.genesis_members,
-				},
-				assets: pallet_assets::GenesisConfig::<Test> {
-					assets: vec![
-						// id, owner, is_sufficient, min_balance
-						(999, 0, true, 1),
-					],
-					metadata: vec![
-						// id, name, symbol, decimals
-						(999, "Token Name".into(), "TOKEN".into(), 10),
-					],
-					accounts: vec![
-						// id, account_id, balance
-						(999, 1, 100),
-						(999, 2, 100),
-						(999, 3, 100),
-						(999, 4, 100),
-						(999, 5, 100),
-						(999, 6, 100),
-					],
 				},
 			}
 			.build_storage()
