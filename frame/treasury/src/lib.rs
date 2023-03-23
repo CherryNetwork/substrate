@@ -384,6 +384,7 @@ pub mod pallet {
 		/// - DbReads: `ProposalCount`, `origin account`
 		/// - DbWrites: `ProposalCount`, `Proposals`, `origin account`
 		/// # </weight>
+		#[pallet::call_index(0)]
 		#[pallet::weight(T::WeightInfo::propose_spend())]
 		pub fn propose_spend(
 			origin: OriginFor<T>,
@@ -471,6 +472,7 @@ pub mod pallet {
 		/// - DbReads: `Proposals`, `rejected proposer account`
 		/// - DbWrites: `Proposals`, `rejected proposer account`
 		/// # </weight>
+		#[pallet::call_index(1)]
 		#[pallet::weight((T::WeightInfo::reject_proposal(), DispatchClass::Operational))]
 		pub fn reject_proposal(
 			origin: OriginFor<T>,
@@ -501,6 +503,7 @@ pub mod pallet {
 		/// - DbReads: `Proposals`, `Approvals`
 		/// - DbWrite: `Approvals`
 		/// # </weight>
+		#[pallet::call_index(2)]
 		#[pallet::weight((T::WeightInfo::approve_proposal(T::MaxApprovals::get()), DispatchClass::Operational))]
 		pub fn approve_proposal(
 			origin: OriginFor<T>,
@@ -522,11 +525,12 @@ pub mod pallet {
 		// ///
 		// /// NOTE: For record-keeping purposes, the proposer is deemed to be equivalent to the
 		// /// beneficiary.
+		// #[pallet::call_index(3)]
 		// #[pallet::weight(T::WeightInfo::spend())]
 		// pub fn spend(
 		// 	origin: OriginFor<T>,
 		// 	#[pallet::compact] amount: BalanceOf<T, I>,
-		// 	beneficiary: <T::Lookup as StaticLookup>::Source,
+		// 	beneficiary: AccountIdLookupOf<T>,
 		// ) -> DispatchResult {
 		// 	let max_amount = T::SpendOrigin::ensure_origin(origin)?;
 		// 	let beneficiary = T::Lookup::lookup(beneficiary)?;
@@ -563,6 +567,7 @@ pub mod pallet {
 		/// - `ProposalNotApproved`: The `proposal_id` supplied was not found in the approval queue,
 		/// i.e., the proposal has not been approved. This could also mean the proposal does not
 		/// exist altogether, thus there is no way it would have been approved in the first place.
+		#[pallet::call_index(4)]
 		#[pallet::weight((T::WeightInfo::remove_approval(), DispatchClass::Operational))]
 		pub fn remove_approval(
 			origin: OriginFor<T>,
