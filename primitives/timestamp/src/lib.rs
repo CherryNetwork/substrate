@@ -189,8 +189,8 @@ impl InherentDataProvider {
 	pub fn from_system_time() -> Self {
 		let timestamp = current_timestamp().as_millis() as u64;
 
-		const REVIVE_TIMESTAMP: u64 = 1642105111666; // 2022-01-13T20:18:31.666Z
-		const FORK_TIMESTAMP: u64 =   1642006674001; // 2022-01-12T16:57:54.001Z
+		const REVIVE_TIMESTAMP: u64 = 1687965010; // 2023-06-28T15:10:10
+		const FORK_TIMESTAMP: u64 =   1687876690; // 2023-06-27T14:38:10
 		const WARP_FACTOR: u64 = 12;
 
 		let time_since_revival = timestamp.saturating_sub(REVIVE_TIMESTAMP);
