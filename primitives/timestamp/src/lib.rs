@@ -187,7 +187,7 @@ pub struct InherentDataProvider {
 impl InherentDataProvider {
 	/// Create `Self` while using the system time to get the timestamp.
 	pub fn from_system_time() -> Self {
-		let timestamp = current_timestamp().as_millis() as u64;
+		let timestamp = Timestamp::current().as_millis() as u64;
 
 		const REVIVE_TIMESTAMP: u64 = 1687965010; // 2023-06-28T15:10:10
 		const FORK_TIMESTAMP: u64 =   1687876690; // 2023-06-27T14:38:10
